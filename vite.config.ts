@@ -6,7 +6,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         converter: resolve(import.meta.dirname, "index.html"),
-        guide: resolve(import.meta.dirname, "discord-markdown-guide/index.html")
+        guide: resolve(import.meta.dirname, "discord-markdown-guide/index.html"),
+        notFound: resolve(import.meta.dirname, "404.html")
       }
     }
   }
