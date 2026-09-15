@@ -16,4 +16,4 @@ npm run fixtures:validate
 npm run analyze:commonmark
 ```
 
-The fixture command downloads the pinned CommonMark 0.31.2 specification examples and writes a provenance manifest under `data/spec/`. The resumable corpus workflow is documented in [`docs/data-pipeline.md`](./docs/data-pipeline.md).
+The fixture command downloads the pinned CommonMark 0.31.2 specification examples and writes a provenance manifest under `data/spec/`. The resumable corpus workflow is documented in [`docs/data-pipeline.md`](./docs/data-pipeline.md); current corpus measurements are summarized in [`docs/data-findings.md`](./docs/data-findings.md).

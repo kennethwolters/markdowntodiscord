@@ -32,9 +32,9 @@ async function main(): Promise<void> {
       const operation = operations[(fixtureIndex + offset) % operations.length];
       const changed = operation.apply(fixture.source_markdown);
       if (changed == null || changed === fixture.source_markdown) continue;
-      const normalized = normalize(changed);
-      if (seen.has(normalized)) continue;
-      seen.add(normalized);
+      const dedupKey = operation.name === "lf-to-crlf" ? `crlf:${changed}` : normalize(changed);
+      if (seen.has(dedupKey)) continue;
+      seen.add(dedupKey);
       const digest = createHash("sha256").update(`${fixture.id}\0${operation.name}\0${changed}`).digest("hex").slice(0, 12);
       mutants.push({
         schemaVersion: 1,

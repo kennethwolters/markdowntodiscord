@@ -55,6 +55,23 @@ npm run data:oasst:extract -- --reset --chunk-size 1000 --stop-after 2500
 npm run data:oasst:extract -- --chunk-size 5000
 ```
 
+## WildChat sequence
+
+WildChat is pinned to revision `7d6490e462285cf85d91eabea0f9a954fbddcd1f`. Its 14 Parquet shards total 3,360,836,020 bytes. Raw shards remain gitignored.
+
+```bash
+# A bounded first checkpoint
+npm run data:wildchat:fetch -- --max-shards 1
+npm run data:wildchat:scan -- --reset --max-shards 1 --stop-after-groups 5
+npm run data:wildchat:scan -- --max-shards 1
+
+# Continue to the complete corpus
+npm run data:wildchat:fetch
+npm run data:wildchat:scan
+```
+
+The fetcher verifies every shard against the committed byte length and SHA-256 manifest and automatically discards invalid complete/oversized partial files. The scanner uses pinned `pyarrow` through `uv`, reads one Parquet row group at a time, retains assistant text only in memory, and atomically checkpoints after each row group. `assistantTurns` means assistant-role turns with string content and is the denominator for feature rates; `conversations` counts Parquet rows. Reports contain aggregate counts only and exclude prompts, message text, IP hashes, headers, and geography.
+
 ## Operational rules
 
 1. Run one acquisition or transformation stage at a time.

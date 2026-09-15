@@ -140,8 +140,8 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 ### M2 — real-output mining
 
 - [x] Build resumable OASST1 fetcher, streaming scanner, and feature counters.
-- [ ] Build WildChat streaming scanner with metadata minimization.
-- [x] Produce the first prevalence report and deterministic feature-stratified candidate sample.
+- [x] Pin, checksum, download, and row-group scan all 14 WildChat shards with metadata minimization.
+- [x] Produce complete OASST1 and WildChat prevalence reports plus an OASST1 deterministic feature-stratified candidate sample.
 - [x] Extract selected candidates into private, gitignored review data with direct-identifier redaction.
 - [ ] Human-review PII and conversion quality before promoting any retained examples.
 

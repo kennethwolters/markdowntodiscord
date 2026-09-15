@@ -37,6 +37,16 @@ describe("convertMarkdown", () => {
     expect(result.messages.join("\n")).toContain(longCell);
   });
 
+  it("preserves single-dollar text without mistaking currency for math", () => {
+    expect(convertMarkdown("It costs $20 and $30 today.").messages[0]).toBe("It costs $20 and $30 today.");
+    expect(convertMarkdown("Use $x^2$ here.").messages[0]).toBe("Use $x^2$ here.");
+  });
+
+  it("degrades block LaTeX to readable code", () => {
+    const block = convertMarkdown("$$\nx^2 + y^2\n$$");
+    expect(block.messages[0]).toBe("```text\n$$\nx^2 + y^2\n$$\n```");
+  });
+
   it("converts images to visible links", () => {
     expect(convertMarkdown("![Diagram](https://example.com/a.png)").messages[0])
       .toBe("[Image: Diagram](https://example.com/a.png)");
@@ -75,11 +85,25 @@ describe("convertMarkdown", () => {
 });
 
 describe("splitDiscordMessages", () => {
-  it("splits at block boundaries", () => {
-    expect(splitDiscordMessages("a".repeat(20) + "\n\n" + "b".repeat(20), 32)).toEqual([
-      "a".repeat(20),
-      "b".repeat(20)
-    ]);
+  it("splits at block boundaries without losing the separator", () => {
+    const source = "a".repeat(20) + "\n\n" + "b".repeat(20);
+    const messages = splitDiscordMessages(source, 32);
+    expect(messages).toHaveLength(2);
+    expect(messages.join("")).toBe(source);
+  });
+
+  it("does not discard whitespace at hard split boundaries", () => {
+    const source = "a ".repeat(100);
+    const messages = splitDiscordMessages(source, 32);
+    expect(messages.join("")).toBe(source);
+    expect(messages.every((message) => Array.from(message).length <= 32)).toBe(true);
+  });
+
+  it("preserves blank-line separation between adjacent oversized blocks", () => {
+    const source = `${"a".repeat(40)}\n\n${"b".repeat(40)}`;
+    const messages = splitDiscordMessages(source, 32);
+    expect(messages.join("")).toBe(source);
+    expect(messages.every((message) => Array.from(message).length <= 32)).toBe(true);
   });
 
   it("closes and reopens oversized code fences", () => {

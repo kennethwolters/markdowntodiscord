@@ -19,10 +19,13 @@
     "data:oasst:fetch": "node scripts/fetch-oasst.mjs",
     "data:oasst:scan": "node scripts/mine-oasst.mjs",
     "data:oasst:sample": "node scripts/sample-oasst-candidates.mjs",
-    "data:oasst:extract": "node scripts/extract-oasst-candidates.mjs"
+    "data:oasst:extract": "node scripts/extract-oasst-candidates.mjs",
+    "data:wildchat:fetch": "node scripts/fetch-wildchat.mjs",
+    "data:wildchat:scan": "uv run scripts/mine_wildchat.py"
   },
   "dependencies": {
     "remark-gfm": "4.0.1",
+    "remark-math": "^6.0.0",
     "remark-parse": "11.0.0",
     "unified": "11.0.5"
   },

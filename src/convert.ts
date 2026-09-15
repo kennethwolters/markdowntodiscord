@@ -1,6 +1,7 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 
 type Node = {
   type: string;
@@ -26,7 +27,7 @@ export interface ConvertOptions {
 }
 
 export interface ConversionWarning {
-  code: "lossy-table" | "html-flattened" | "unresolved-reference" | "unsafe-url" | "mentions-neutralized" | "message-split";
+  code: "lossy-table" | "math-degraded" | "html-flattened" | "unresolved-reference" | "unsafe-url" | "mentions-neutralized" | "message-split";
   message: string;
 }
 
@@ -41,7 +42,7 @@ interface Context {
   neutralizeMentions: boolean;
 }
 
-const parser = unified().use(remarkParse).use(remarkGfm);
+const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath, { singleDollarTextMath: false });
 
 export function convertMarkdown(source: string, options: ConvertOptions = {}): ConversionResult {
   const max = options.maxMessageLength ?? 2_000;
@@ -82,6 +83,9 @@ function renderBlock(node: Node, context: Context, depth = 0): string {
     case "thematicBreak": return "──────────";
     case "blockquote": return prefixLines(renderChildren(node, context, depth), "> ");
     case "code": return fencedCode(node.value ?? "", node.lang ?? "");
+    case "math":
+      context.warnings.push({ code: "math-degraded", message: "Math was preserved as readable source because Discord does not render LaTeX." });
+      return fencedCode(`$$\n${node.value ?? ""}\n$$`, "text");
     case "list": return renderList(node, context, depth);
     case "table": return renderTable(node, context);
     case "html":
@@ -109,6 +113,9 @@ function renderInline(node: Node, context: Context): string {
     case "emphasis": return `*${renderInlineChildren(node, context)}*`;
     case "delete": return `~~${renderInlineChildren(node, context)}~~`;
     case "inlineCode": return inlineCode(node.value ?? "");
+    case "inlineMath":
+      context.warnings.push({ code: "math-degraded", message: "Math was preserved as readable source because Discord does not render LaTeX." });
+      return inlineCode(`$${node.value ?? ""}$`);
     case "break": return "\n";
     case "link": return renderLink(renderInlineChildren(node, context), node.url ?? "", context);
     case "image": return renderLink(`Image: ${renderText(node.alt || "image", context)}`, node.url ?? "", context);
@@ -235,14 +242,23 @@ export function splitDiscordMessages(value: string, max = 2_000): string[] {
   const messages: string[] = [];
   let current = "";
 
-  for (const block of blocks) {
-    const pieces = splitOversizedBlock(block, max);
-    for (const piece of pieces) {
-      const candidate = current ? `${current}\n\n${piece}` : piece;
+  for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+    const block = blocks[blockIndex];
+    const pieceLimit = blockIndex === 0 ? max : max - 2;
+    const pieces = splitOversizedBlock(block, pieceLimit);
+    for (let pieceIndex = 0; pieceIndex < pieces.length; pieceIndex++) {
+      const separator = blockIndex > 0 && pieceIndex === 0 ? "\n\n" : "";
+      const piece = pieces[pieceIndex];
+      const candidate = current ? `${current}${separator}${piece}` : `${separator}${piece}`;
       if (codePointLength(candidate) <= max) current = candidate;
       else {
-        if (current) messages.push(current);
-        current = piece;
+        if (current && separator && codePointLength(current + separator) <= max) {
+          messages.push(current + separator);
+          current = piece;
+        } else {
+          if (current) messages.push(current);
+          current = `${separator}${piece}`;
+        }
       }
     }
   }
@@ -324,8 +340,7 @@ function splitPlain(value: string, max: number): string[] {
     for (let index = at; index >= earliest; index--) {
       if (remaining[index - 1] === "\n" || remaining[index - 1] === " ") { at = index; break; }
     }
-    parts.push(remaining.splice(0, at).join("").trimEnd());
-    while (remaining[0] === "\n" || remaining[0] === " ") remaining.shift();
+    parts.push(remaining.splice(0, at).join(""));
   }
   if (remaining.length) parts.push(remaining.join(""));
   return parts;
