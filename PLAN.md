@@ -105,7 +105,7 @@ Privacy rules for conversation corpora:
 - Validate a deliberately stopped small run before starting a complete scan.
 - Keep a concise stage log containing input identity, counts, output identity, and failure state.
 
-See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery behavior.
+See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery behavior. The closed-loop evaluator and optimizer design is specified in [`docs/agentic-optimization.md`](./docs/agentic-optimization.md).
 
 ## Quality gates
 
@@ -161,3 +161,13 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 - [x] Deploy static assets to Cloudflare Pages.
 - [ ] Register and connect the canonical `markdowntodiscord.com` domain (currently unregistered).
 - [ ] Add privacy-preserving aggregate analytics and opt-in feedback.
+
+### M5 — closed-loop agentic optimization
+
+- [x] Specify the data portfolio, agent roles, durable records, metrics, leakage controls, and acceptance gates.
+- [ ] Add versioned loop-record schemas and immutable split manifests.
+- [ ] Build a replayable deterministic baseline pack from current fixtures and mutants.
+- [ ] Pilot blinded two-critic evaluation and adjudication on 500 public cases.
+- [ ] Add failure clustering, minimization, and adversarial neighbor generation.
+- [ ] Gate isolated optimizer patches against validation and frozen challenge sets.
+- [ ] Scale to 25,000-50,000 stratified WildChat cases after privacy and evaluator-calibration gates pass.

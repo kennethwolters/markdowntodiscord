@@ -360,6 +360,6 @@ function fittingGraphemePrefix(values: string[], maxCodePoints: number): number 
 }
 
 function graphemes(value: string): string[] {
-  const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+  const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
   return Array.from(segmenter.segment(value), (entry) => entry.segment);
 }
