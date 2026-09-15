@@ -61,8 +61,7 @@ export function convertMarkdown(source: string, options: ConvertOptions = {}): C
     .map((node) => renderBlock(node, context))
     .filter(Boolean);
   const rendered = blocks.join("\n\n").trim();
-  const safe = context.neutralizeMentions ? neutralizeMentions(rendered, context) : rendered;
-  const messages = splitDiscordMessages(safe, max);
+  const messages = splitDiscordMessages(rendered, max);
   if (messages.length > 1) {
     context.warnings.push({ code: "message-split", message: `Output was split into ${messages.length} Discord messages.` });
   }
@@ -87,7 +86,7 @@ function renderBlock(node: Node, context: Context, depth = 0): string {
     case "table": return renderTable(node, context);
     case "html":
       context.warnings.push({ code: "html-flattened", message: "Raw HTML was flattened to readable text." });
-      return flattenHtml(node.value ?? "");
+      return renderText(flattenHtml(node.value ?? ""), context);
     case "footnoteDefinition": return `[^${node.identifier ?? "note"}]: ${renderChildren(node, context, depth)}`;
     default:
       if (node.children) return renderChildren(node, context, depth);
@@ -105,19 +104,19 @@ function renderInlineChildren(node: Node, context: Context): string {
 
 function renderInline(node: Node, context: Context): string {
   switch (node.type) {
-    case "text": return escapeDiscordText(node.value ?? "");
+    case "text": return renderText(node.value ?? "", context);
     case "strong": return `**${renderInlineChildren(node, context)}**`;
     case "emphasis": return `*${renderInlineChildren(node, context)}*`;
     case "delete": return `~~${renderInlineChildren(node, context)}~~`;
     case "inlineCode": return inlineCode(node.value ?? "");
     case "break": return "\n";
     case "link": return renderLink(renderInlineChildren(node, context), node.url ?? "", context);
-    case "image": return renderLink(`Image: ${escapeDiscordText(node.alt || "image")}`, node.url ?? "", context);
+    case "image": return renderLink(`Image: ${renderText(node.alt || "image", context)}`, node.url ?? "", context);
     case "linkReference": return renderReference(node, context, false);
     case "imageReference": return renderReference(node, context, true);
     case "html":
       context.warnings.push({ code: "html-flattened", message: "Inline HTML was flattened to readable text." });
-      return flattenHtml(node.value ?? "", false);
+      return renderText(flattenHtml(node.value ?? "", false), context);
     case "footnoteReference": return `[^${node.identifier ?? "note"}]`;
     default:
       if (node.children) return renderInlineChildren(node, context);
@@ -127,7 +126,7 @@ function renderInline(node: Node, context: Context): string {
 
 function renderReference(node: Node, context: Context, image: boolean): string {
   const definition = context.definitions.get((node.identifier ?? "").toLowerCase());
-  const label = image ? `Image: ${node.alt || node.identifier || "image"}` : renderInlineChildren(node, context);
+  const label = image ? `Image: ${renderText(node.alt || node.identifier || "image", context)}` : renderInlineChildren(node, context);
   if (definition) return renderLink(label, definition.url, context);
   context.warnings.push({ code: "unresolved-reference", message: `Reference '${node.identifier ?? ""}' could not be resolved.` });
   return image ? `![${node.alt ?? ""}]` : `[${label}]`;
@@ -148,7 +147,7 @@ function renderTable(node: Node, context: Context): string {
   const rows = (node.children ?? []).map((row) => (row.children ?? []).map((cell) => plainInlineText(cell).replaceAll("\n", " ")));
   if (rows.length === 0) return "";
   const width = Math.max(...rows.map((row) => row.length));
-  const widths = Array.from({ length: width }, (_, column) => Math.min(40, Math.max(3, ...rows.map((row) => codePointLength(row[column] ?? "")))));
+  const widths = Array.from({ length: width }, (_, column) => Math.max(3, ...rows.map((row) => codePointLength(row[column] ?? ""))));
   const format = (row: string[]) => row.map((cell, column) => pad(cell, widths[column])).join(" | ").trimEnd();
   const lines = [format(rows[0]), widths.map((value) => "-".repeat(value)).join("-+-"), ...rows.slice(1).map(format)];
   context.warnings.push({ code: "lossy-table", message: "A GFM table was converted to an aligned code block." });
@@ -161,6 +160,11 @@ function plainInlineText(node: Node): string {
   if (node.type === "inlineCode") return node.value ?? "";
   if (node.children) return node.children.map(plainInlineText).join("");
   return node.value ?? "";
+}
+
+function renderText(value: string, context: Context): string {
+  const escaped = escapeDiscordText(value);
+  return context.neutralizeMentions ? neutralizeMentions(escaped, context) : escaped;
 }
 
 function escapeDiscordText(value: string): string {
@@ -217,8 +221,7 @@ function prefixLines(value: string, prefix: string): string {
 }
 
 function pad(value: string, width: number): string {
-  const clipped = Array.from(value).slice(0, width).join("");
-  return clipped + " ".repeat(Math.max(0, width - codePointLength(clipped)));
+  return value + " ".repeat(Math.max(0, width - codePointLength(value)));
 }
 
 function codePointLength(value: string): number {

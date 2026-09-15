@@ -31,6 +31,12 @@ describe("convertMarkdown", () => {
     expect(result.warnings.map((warning) => warning.code)).toContain("lossy-table");
   });
 
+  it("never truncates long table cell content", () => {
+    const longCell = "important-".repeat(12);
+    const result = convertMarkdown(`| Name | Value |\n|---|---|\n| Key | ${longCell} |`);
+    expect(result.messages.join("\n")).toContain(longCell);
+  });
+
   it("converts images to visible links", () => {
     expect(convertMarkdown("![Diagram](https://example.com/a.png)").messages[0])
       .toBe("[Image: Diagram](https://example.com/a.png)");
@@ -40,6 +46,12 @@ describe("convertMarkdown", () => {
     const result = convertMarkdown("Hello @everyone and <@123456789012345678>");
     expect(result.messages[0]).toBe("Hello @\u200Beveryone and <@\u200B123456789012345678>");
     expect(result.warnings.map((warning) => warning.code)).toContain("mentions-neutralized");
+  });
+
+  it("does not alter inert mentions inside code", () => {
+    const result = convertMarkdown("Outside @here.\n\n```text\n@everyone <@123>\n```");
+    expect(result.messages[0]).toContain("Outside @\u200Bhere.");
+    expect(result.messages[0]).toContain("```text\n@everyone <@123>\n```");
   });
 
   it("can preserve mentions explicitly", () => {
