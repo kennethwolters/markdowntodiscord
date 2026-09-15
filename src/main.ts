@@ -99,7 +99,7 @@ function render(): void {
 
 function updateCopyButton(): void {
   copyAll.textContent = currentMessages.length <= 1
-    ? "Copy message"
+    ? "Copy output"
     : `Copy next · ${nextCopyIndex + 1}/${currentMessages.length}`;
 }
 

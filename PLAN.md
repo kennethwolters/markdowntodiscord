@@ -158,5 +158,6 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 - [x] Add an interactive example and baseline SEO metadata/content.
 - [x] Add the first indexed Discord Markdown reference guide with measured corpus evidence.
 - [ ] Add focused table/splitting pages and an accessible Discord-style preview.
-- [ ] Deploy static assets to Cloudflare Pages.
+- [x] Deploy static assets to Cloudflare Pages.
+- [ ] Register and connect the canonical `markdowntodiscord.com` domain (currently unregistered).
 - [ ] Add privacy-preserving aggregate analytics and opt-in feedback.
