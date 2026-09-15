@@ -28,6 +28,7 @@ const message = "Long code blocks split safely";
 ![Architecture](https://example.com/diagram.png)`;
 
 let currentMessages: string[] = [];
+let nextCopyIndex = 0;
 let timer = 0;
 
 source.addEventListener("input", scheduleRender);
@@ -43,7 +44,16 @@ requiredElement("clear").addEventListener("click", () => {
   source.focus();
 });
 copyAll.addEventListener("click", async () => {
-  if (await copyText(currentMessages.join("\n\n"))) showCopied(copyAll, "Copied all");
+  if (currentMessages.length === 0) return;
+  const copiedIndex = nextCopyIndex;
+  if (!await copyText(currentMessages[copiedIndex])) return;
+  nextCopyIndex = (copiedIndex + 1) % currentMessages.length;
+  copyAll.textContent = currentMessages.length === 1 ? "Copied" : `Copied ${copiedIndex + 1} of ${currentMessages.length}`;
+  copyAll.classList.add("copied");
+  window.setTimeout(() => {
+    copyAll.classList.remove("copied");
+    updateCopyButton();
+  }, 1_400);
 });
 
 render();
@@ -61,15 +71,19 @@ function render(): void {
 
   if (!value) {
     currentMessages = [];
+    nextCopyIndex = 0;
     outputs.append(emptyState("Your converted messages will appear here."));
     messageCount.textContent = "0 messages";
     copyAll.disabled = true;
+    updateCopyButton();
     return;
   }
 
   const result = convertMarkdown(value, { neutralizeMentions: neutralize.checked });
   currentMessages = result.messages;
+  nextCopyIndex = 0;
   copyAll.disabled = false;
+  updateCopyButton();
   messageCount.textContent = `${result.messages.length} ${result.messages.length === 1 ? "message" : "messages"}`;
 
   const uniqueWarnings = [...new Map(result.warnings.map((warning) => [warning.code, warning])).values()];
@@ -81,6 +95,12 @@ function render(): void {
   }
 
   result.messages.forEach((message, index) => outputs.append(outputCard(message, index, result.messages.length)));
+}
+
+function updateCopyButton(): void {
+  copyAll.textContent = currentMessages.length <= 1
+    ? "Copy message"
+    : `Copy next · ${nextCopyIndex + 1}/${currentMessages.length}`;
 }
 
 function outputCard(message: string, index: number, total: number): HTMLElement {

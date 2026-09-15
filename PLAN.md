@@ -156,6 +156,7 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 
 - [x] Build the initial local-only editor, warnings, and per-message copy controls.
 - [x] Add an interactive example and baseline SEO metadata/content.
-- [ ] Add syntax-specific landing pages and an accessible Discord-style preview.
+- [x] Add the first indexed Discord Markdown reference guide with measured corpus evidence.
+- [ ] Add focused table/splitting pages and an accessible Discord-style preview.
 - [ ] Deploy static assets to Cloudflare Pages.
 - [ ] Add privacy-preserving aggregate analytics and opt-in feedback.

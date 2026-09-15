@@ -10,3 +10,6 @@
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
+
+/discord-markdown-guide/index.html
+  Cache-Control: public, max-age=0, must-revalidate
