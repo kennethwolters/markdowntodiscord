@@ -21,4 +21,6 @@ jobs:
       - run: npm test
       - run: npm run fixtures:validate
       - run: npm run analyze:commonmark
+      - run: npm run mutants:generate
+      - run: git diff --exit-code -- data/mutations data/reports
       - run: npm run build

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "source": "data/spec/commonmark-0.31.2.jsonl",
+  "sourceSha256": "b9bb2dad0e45711bd68a3f644009ae0d2b3ce62f8f31817f80df4c55bbfcf712",
+  "output": "data/mutations/commonmark-mutants-v1.jsonl",
+  "outputSha256": "6b29f7d64179e5ba843217588765c3f5b87fc940bab03c22c72f32bc48f042f6",
+  "targetCount": 500,
+  "generated": 500,
+  "uniqueParents": 500,
+  "mutationCounts": {
+    "append-combining-mark": 106,
+    "first-space-to-tab": 59,
+    "append-asterisk": 50,
+    "append-backtick": 50,
+    "append-discord-spoiler": 50,
+    "append-zwj-emoji": 50,
+    "prepend-blockquote": 50,
+    "prepend-list-marker": 50,
+    "first-space-to-nbsp": 35
+  },
+  "successful": 500,
+  "failures": [],
+  "multipleMessages": 0,
+  "warningCounts": {
+    "html-flattened": 70,
+    "unsafe-url": 41,
+    "unresolved-reference": 1
+  },
+  "claims": "Controlled synthetic robustness cases only; converter output is not stored or labeled as human ground truth."
+}
