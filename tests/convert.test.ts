@@ -89,6 +89,15 @@ describe("splitDiscordMessages", () => {
     expect(messages.every((message) => Array.from(message).length <= 40)).toBe(true);
   });
 
+  it("keeps blank lines inside fenced code while splitting", () => {
+    const body = `${"a".repeat(40)}\n\n${"b".repeat(40)}`;
+    const messages = splitDiscordMessages(`\`\`\`txt\n${body}\n\`\`\``, 40);
+    expect(messages.length).toBeGreaterThan(1);
+    expect(messages.every((message) => message.startsWith("```txt\n") && message.endsWith("\n```"))).toBe(true);
+    const recovered = messages.map((message) => message.slice(7, -4)).join("");
+    expect(recovered).toBe(body);
+  });
+
   it("closes and reopens formatting around oversized formatted blocks", () => {
     const result = convertMarkdown(`**${"word ".repeat(599)}word**`);
     expect(result.messages.length).toBeGreaterThan(1);

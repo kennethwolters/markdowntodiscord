@@ -131,6 +131,7 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 - [ ] Complete source-AST to Discord serialization policies.
 - [ ] Implement structure-aware splitting for every block type.
 - [x] Generate and execute-check 500 deterministic one-edit CommonMark mutants with parent lineage.
+- [x] Run 500 seeded property cases covering Markdown punctuation, malformed input, Unicode, combining marks, and ZWJ emoji.
 - [x] Add the first Discord syntax, mention-safety, and policy fixtures.
 - [x] Run all 652 CommonMark 0.31.2 examples through capacity/crash validation.
 - [ ] Expand Unicode, malformed-input, and boundary fixtures.

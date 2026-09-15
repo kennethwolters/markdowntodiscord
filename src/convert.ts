@@ -231,7 +231,7 @@ function codePointLength(value: string): number {
 export function splitDiscordMessages(value: string, max = 2_000): string[] {
   if (!Number.isInteger(max) || max < 16) throw new RangeError("max must be an integer of at least 16");
   if (!value) return [""];
-  const blocks = value.split(/\n{2,}/);
+  const blocks = splitTopLevelBlocks(value);
   const messages: string[] = [];
   let current = "";
 
@@ -248,6 +248,28 @@ export function splitDiscordMessages(value: string, max = 2_000): string[] {
   }
   if (current || messages.length === 0) messages.push(current);
   return messages;
+}
+
+function splitTopLevelBlocks(value: string): string[] {
+  const blocks: string[] = [];
+  let current: string[] = [];
+  let fenceLength = 0;
+  for (const line of value.split("\n")) {
+    const fence = line.match(/^(`{3,})/);
+    if (!fenceLength && fence) fenceLength = fence[1].length;
+    else if (fenceLength && fence && fence[1].length >= fenceLength && line.slice(fence[1].length).trim() === "") fenceLength = 0;
+
+    if (!fenceLength && line === "") {
+      if (current.length) {
+        blocks.push(current.join("\n"));
+        current = [];
+      }
+      continue;
+    }
+    current.push(line);
+  }
+  if (current.length) blocks.push(current.join("\n"));
+  return blocks;
 }
 
 function splitOversizedBlock(block: string, max: number): string[] {
