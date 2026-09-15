@@ -77,6 +77,13 @@ describe("splitDiscordMessages", () => {
     expect(messages.every((message) => Array.from(message).length <= 40)).toBe(true);
   });
 
+  it("closes and reopens formatting around oversized formatted blocks", () => {
+    const result = convertMarkdown(`**${"word ".repeat(599)}word**`);
+    expect(result.messages.length).toBeGreaterThan(1);
+    expect(result.messages.every((message) => message.startsWith("**") && message.endsWith("**"))).toBe(true);
+    expect(result.messages.every((message) => Array.from(message).length <= 2_000)).toBe(true);
+  });
+
   it("handles code containing a backtick run near the message limit", () => {
     const result = convertMarkdown(`~~~txt\n${"`".repeat(80)}\n~~~`, { maxMessageLength: 32 });
     expect(result.messages.length).toBeGreaterThan(1);

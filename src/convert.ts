@@ -254,6 +254,13 @@ function splitOversizedBlock(block: string, max: number): string[] {
     const [, , language, body] = fenced;
     return splitFencedBody(body, language, max);
   }
+  for (const marker of ["**", "~~", "||", "*"]) {
+    if (block.startsWith(marker) && block.endsWith(marker) && block.length > marker.length * 2) {
+      const inner = block.slice(marker.length, -marker.length);
+      const available = max - codePointLength(marker) * 2;
+      return splitPlain(inner, available).map((part) => `${marker}${part}${marker}`);
+    }
+  }
   return splitPlain(block, max);
 }
 
