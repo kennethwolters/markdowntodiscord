@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "dataset": "OpenAssistant/oasst1",
+  "sourceSha256": "286a6e9a5a413b3272ae9c0b5a20d327983dea1c24342ae28cb244a6da65185c",
+  "processedRows": 88838,
+  "assistantRows": 55668,
+  "perFeature": 25,
+  "selectedByFeature": {
+    "blockquote": 25,
+    "deep_heading": 25,
+    "fenced_code": 25,
+    "footnote": 17,
+    "gfm_table_candidate": 25,
+    "heading": 25,
+    "horizontal_rule": 25,
+    "html": 25,
+    "inline_code": 25,
+    "inline_link": 25,
+    "latex": 25,
+    "markdown_image": 7,
+    "ordered_list": 25,
+    "reference_link": 25,
+    "spoiler": 25,
+    "unbalanced_fence_candidate": 25,
+    "unordered_list": 25
+  },
+  "privateIndex": "data/work/oasst1-candidate-index.json",
+  "privacy": "Public summary contains counts only. The gitignored private index contains hashes and source row numbers, but no message text or user identifiers."
+}

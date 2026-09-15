@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "source": "data/spec/commonmark-0.31.2.jsonl",
+  "sourceSha256": "b9bb2dad0e45711bd68a3f644009ae0d2b3ce62f8f31817f80df4c55bbfcf712",
+  "records": 652,
+  "successful": 652,
+  "failures": [],
+  "warningCounts": {
+    "unsafe-url": 126,
+    "html-flattened": 91,
+    "unresolved-reference": 1
+  },
+  "outputMessageCounts": {
+    "one": 652,
+    "multiple": 0
+  },
+  "emptyOutputs": 12,
+  "maxOutputCodePoints": 172,
+  "maxMessagesPerFixture": 1,
+  "note": "Execution/capacity report only. CommonMark expected HTML is not Discord user-preference ground truth."
+}

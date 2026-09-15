@@ -1,0 +1,6 @@
+node_modules/
+coverage/
+dist/
+data/raw/
+data/work/
+.DS_Store

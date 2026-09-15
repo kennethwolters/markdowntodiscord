@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown to Discord — Free Discord Markdown Converter</title>
+    <meta name="description" content="Convert Markdown into Discord-compatible formatting. Fix tables, task lists, images, references, mentions, and messages over 2,000 characters—entirely in your browser." />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://markdowntodiscord.com/" />
+    <meta property="og:title" content="Markdown to Discord Converter" />
+    <meta property="og:description" content="Paste Markdown and copy safe, Discord-compatible messages. No uploads; conversion stays in your browser." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://markdowntodiscord.com/" />
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"WebApplication","name":"Markdown to Discord","url":"https://markdowntodiscord.com/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A browser-based Markdown to Discord converter."}
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Markdown to Discord home">
+        <span class="brand-mark" aria-hidden="true">M↓D</span>
+        <span>Markdown to Discord</span>
+      </a>
+      <span class="privacy-badge">Private by default · runs locally</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Free browser tool</p>
+        <h1>Make Markdown work in Discord.</h1>
+        <p class="lede">Paste Markdown. Get safe, readable Discord messages—with tables, tasks, links, code fences, and 2,000-character splitting handled for you.</p>
+      </section>
+
+      <section class="workspace" aria-label="Markdown converter">
+        <div class="panel input-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="step">01</span>
+              <h2>Markdown</h2>
+            </div>
+            <button class="text-button" id="load-example" type="button">Load example</button>
+          </div>
+          <label class="sr-only" for="source">Markdown to convert</label>
+          <textarea id="source" spellcheck="false" placeholder="# Paste your Markdown here…"></textarea>
+          <div class="panel-footer">
+            <span id="source-count">0 characters</span>
+            <button class="text-button danger" id="clear" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div class="panel output-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="step">02</span>
+              <h2>Discord messages</h2>
+            </div>
+            <button class="primary-button" id="copy-all" type="button" disabled>Copy all</button>
+          </div>
+          <div id="warnings" class="warnings" aria-live="polite"></div>
+          <div id="outputs" class="outputs" aria-live="polite">
+            <div class="empty-state">Your converted messages will appear here.</div>
+          </div>
+          <div class="panel-footer output-footer">
+            <label class="toggle">
+              <input id="neutralize" type="checkbox" checked />
+              <span>Prevent accidental @mentions</span>
+            </label>
+            <span id="message-count">0 messages</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="explanation">
+        <div>
+          <p class="eyebrow">Why convert?</p>
+          <h2>Discord is not GitHub.</h2>
+        </div>
+        <div class="feature-grid">
+          <article><strong>Tables stay readable</strong><p>Pipe tables become aligned text blocks instead of wrapping unpredictably.</p></article>
+          <article><strong>Code stays fenced</strong><p>Long code blocks close and reopen safely across Discord messages.</p></article>
+          <article><strong>Mentions stay quiet</strong><p>Potentially active user, role, @everyone, and @here mentions are neutralized by default.</p></article>
+          <article><strong>Nothing is uploaded</strong><p>Your text is converted locally in this browser. There is no document-processing backend.</p></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Markdown to Discord</span>
+      <span>Built against CommonMark, GFM, and Discord-specific fixtures.</span>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

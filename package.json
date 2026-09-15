@@ -1,0 +1,36 @@
+{
+  "name": "markdown-to-discord",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "fixtures:commonmark": "node scripts/fetch-commonmark-fixtures.mjs",
+    "fixtures:validate": "tsx scripts/validate-fixtures.ts data/fixtures/*.jsonl",
+    "analyze:commonmark": "tsx scripts/analyze-commonmark.ts",
+    "data:oasst:fetch": "node scripts/fetch-oasst.mjs",
+    "data:oasst:scan": "node scripts/mine-oasst.mjs",
+    "data:oasst:sample": "node scripts/sample-oasst-candidates.mjs",
+    "data:oasst:extract": "node scripts/extract-oasst-candidates.mjs"
+  },
+  "dependencies": {
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.5"
+  },
+  "devDependencies": {
+    "@types/mdast": "4.0.4",
+    "@types/node": "^22.20.2",
+    "tsx": "^4.23.13",
+    "typescript": "7.0.2",
+    "vite": "^7.3.6",
+    "vitest": "4.0.1"
+  }
+}

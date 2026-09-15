@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourceSha256": "286a6e9a5a413b3272ae9c0b5a20d327983dea1c24342ae28cb244a6da65185c",
+  "candidateIndexSha256": "c3b93e3cd9ab02e577e9f3bc77310860a8ee962049690053b62561d493b524ce",
+  "uniqueCandidates": 384,
+  "featureReferences": 399,
+  "candidatesWithAutomaticRedactions": 13,
+  "automaticRedactionCounts": {
+    "email": 3,
+    "phone-like": 11,
+    "ipv4": 1
+  },
+  "candidatesWithPositiveSourcePiiLabel": 3,
+  "privateOutput": "data/work/oasst1-candidates.private.jsonl",
+  "releaseStatus": "private-review-only",
+  "privacy": "Text is stored only in gitignored local work data. Direct email, IPv4, and phone-like strings are replaced; every candidate still requires human PII review before promotion."
+}
