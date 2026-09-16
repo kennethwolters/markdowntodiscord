@@ -12,6 +12,8 @@ const criticArguments = values("--critic");
 if (criticArguments.length < 2) throw new Error("Provide at least two --critic id:provider:model=path arguments");
 const critics = criticArguments.map(parseCritic);
 if (new Set(critics.map((critic) => critic.id)).size !== critics.length) throw new Error("Critic IDs must be unique");
+const quarantineKeys = new Set(values("--quarantine"));
+for (const key of quarantineKeys) if (!/^[^:]+:pilot-v1-[a-f0-9]{16}$/.test(key)) throw new Error(`Invalid quarantine key: ${key}`);
 
 const packets = await loadJsonl<Record<string, any>>(packetsPath);
 const packetMap = new Map(packets.map((packet) => [packet.packetId, packet]));
@@ -33,12 +35,16 @@ for (const critic of critics) {
   const byPacket = new Map<string, Record<string, any>>();
   const verdicts = { pass: 0, fail: 0, abstain: 0 };
   let goldPass = 0;
+  let protocolQuarantined = 0;
   for (const rawJudgment of raw.judgments) {
     const packet = packetMap.get(rawJudgment.packetId);
     if (!packet) throw new Error(`${critic.id}: unknown packet ${rawJudgment.packetId}`);
     if (byPacket.has(rawJudgment.packetId)) throw new Error(`${critic.id}: duplicate packet ${rawJudgment.packetId}`);
     if (rawJudgment.caseHash !== packet.caseHash) throw new Error(`${critic.id}: case hash mismatch for ${rawJudgment.packetId}`);
-    validateCitations(rawJudgment, packet, critic.id);
+    const quarantineKey = `${critic.id}:${rawJudgment.packetId}`;
+    const protocolStatus = quarantineKeys.has(quarantineKey) ? "quarantined" : "valid";
+    if (protocolStatus === "valid") validateCitations(rawJudgment, packet, critic.id);
+    else protocolQuarantined++;
     const judgment = {
       schemaVersion: 1,
       judgmentId: `public-pilot-v1:${critic.id}:${rawJudgment.packetId}`,
@@ -54,7 +60,13 @@ for (const critic of critics) {
       ...(rawJudgment.abstentionReason ? { abstentionReason: rawJudgment.abstentionReason } : {})
     };
     validate(judgmentValidator, judgment, judgment.judgmentId);
-    const record = { packetId: rawJudgment.packetId, judgment, judgmentSha256: sha256Value(judgment) };
+    const record = {
+      packetId: rawJudgment.packetId,
+      judgment,
+      judgmentSha256: sha256Value(judgment),
+      protocolStatus,
+      ...(protocolStatus === "quarantined" ? { quarantineReason: "Citation validation failed and two bounded correction attempts were protocol-invalid." } : {})
+    };
     normalizedJudgments.push(record);
     byPacket.set(rawJudgment.packetId, record);
     verdicts[rawJudgment.verdict as keyof typeof verdicts]++;
@@ -69,6 +81,7 @@ for (const critic of critics) {
     outputSha256: await sha256File(critic.path),
     verdicts,
     meanConfidence: raw.judgments.reduce((sum: number, item: any) => sum + item.confidence, 0) / raw.judgments.length,
+    protocolQuarantined,
     goldPasses: goldPass,
     goldTotal: index.mappings.filter((mapping: any) => mapping.labelClass === "gold").length
   });
@@ -77,12 +90,15 @@ for (const critic of critics) {
 const pairwiseAgreement = [];
 for (let left = 0; left < critics.length; left++) for (let right = left + 1; right < critics.length; right++) {
   let agreements = 0;
+  let comparable = 0;
   for (const packet of packets) {
-    const a = judgmentsByCritic.get(critics[left].id)!.get(packet.packetId)!.judgment.verdict;
-    const b = judgmentsByCritic.get(critics[right].id)!.get(packet.packetId)!.judgment.verdict;
-    if (a === b) agreements++;
+    const aRecord = judgmentsByCritic.get(critics[left].id)!.get(packet.packetId)!;
+    const bRecord = judgmentsByCritic.get(critics[right].id)!.get(packet.packetId)!;
+    if (aRecord.protocolStatus !== "valid" || bRecord.protocolStatus !== "valid") continue;
+    comparable++;
+    if (aRecord.judgment.verdict === bRecord.judgment.verdict) agreements++;
   }
-  pairwiseAgreement.push({ left: critics[left].id, right: critics[right].id, agreements, total: packets.length, rate: agreements / packets.length });
+  pairwiseAgreement.push({ left: critics[left].id, right: critics[right].id, agreements, total: comparable, excludedProtocolInvalid: packets.length - comparable, rate: agreements / comparable });
 }
 
 const routingCounts: Record<string, number> = {};
@@ -90,7 +106,8 @@ const triage = packets.map((packet) => {
   const judgments = critics.map((critic) => judgmentsByCritic.get(critic.id)!.get(packet.packetId)!);
   const verdicts = judgments.map((record) => record.judgment.verdict);
   const uniqueVerdicts = new Set(verdicts);
-  const route = verdicts.includes("abstain") ? "adjudicate-abstention"
+  const route = judgments.some((record) => record.protocolStatus !== "valid") ? "adjudicate-invalid-critic-output"
+    : verdicts.includes("abstain") ? "adjudicate-abstention"
     : uniqueVerdicts.size > 1 ? "adjudicate-disagreement"
     : verdicts[0] === "fail" ? "adjudicate-unanimous-failure"
     : "no-review";
@@ -102,7 +119,7 @@ const triage = packets.map((packet) => {
     baselineCaseId: mapping.baselineCaseId,
     labelClass: mapping.labelClass,
     route,
-    judgments: judgments.map((record, index) => ({ criticId: critics[index].id, verdict: record.judgment.verdict, judgmentSha256: record.judgmentSha256 }))
+    judgments: judgments.map((record, index) => ({ criticId: critics[index].id, verdict: record.judgment.verdict, judgmentSha256: record.judgmentSha256, protocolStatus: record.protocolStatus }))
   };
 });
 
