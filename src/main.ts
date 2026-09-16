@@ -28,6 +28,7 @@ const warningHelp: Record<ConversionWarning["code"], { title: string; action: st
 };
 
 type ConversionResponse = { id: number; result: ConversionResult };
+type IconName = "check" | "copy" | "down" | "help";
 
 let converterWorker: Worker | undefined;
 let nextConversionId = 0;
@@ -84,7 +85,7 @@ copyNext.addEventListener("click", async () => {
   markCopied(copiedIndex);
   const announcement = currentMessages.length === 1 ? "Output copied" : `Message ${copiedIndex + 1} of ${currentMessages.length} copied`;
   status.textContent = announcement;
-  copyNext.textContent = "✓";
+  setButtonContent(copyNext, "check");
   copyNext.classList.add("copied");
   window.setTimeout(() => {
     copyNext.classList.remove("copied");
@@ -111,7 +112,7 @@ async function render(): Promise<void> {
   if (!value.trim()) {
     currentMessages = [];
     nextCopyIndex = 0;
-    outputs.append(emptyState("↓"));
+    outputs.append(emptyState());
     messageCount.textContent = "0";
     status.textContent = "No output";
     copyNext.disabled = true;
@@ -119,7 +120,7 @@ async function render(): Promise<void> {
     return;
   }
 
-  outputs.append(emptyState("↓"));
+  outputs.append(emptyState());
   status.textContent = "Converting";
   let result: ConversionResult;
   try {
@@ -157,7 +158,7 @@ function renderWarnings(items: ConversionWarning[]): void {
     copy.title = matches.length > 1 && code === "unresolved-reference" ? matches.map((match) => match.message).join(" ") : help.action;
     const link = document.createElement("a");
     link.href = help.href;
-    link.textContent = "?";
+    link.append(icon("help"));
     link.setAttribute("aria-label", `Help: ${help.title}`);
     link.title = help.action;
     item.append(copy, link);
@@ -168,11 +169,15 @@ function renderWarnings(items: ConversionWarning[]): void {
 function updateCopyButton(): void {
   const complete = currentMessages.length > 1 && copiedIndices.size === currentMessages.length;
   copyNext.disabled = currentMessages.length === 0 || complete;
-  copyNext.textContent = complete
-    ? `✓ ${currentMessages.length} / ${currentMessages.length}`
-    : currentMessages.length <= 1
-      ? "⧉"
-      : `⧉ ${nextCopyIndex + 1} / ${currentMessages.length}`;
+  setButtonContent(
+    copyNext,
+    complete ? "check" : "copy",
+    complete
+      ? `${currentMessages.length} / ${currentMessages.length}`
+      : currentMessages.length <= 1
+        ? undefined
+        : `${nextCopyIndex + 1} / ${currentMessages.length}`,
+  );
   const label = complete
     ? `All ${currentMessages.length} messages copied`
     : currentMessages.length <= 1
@@ -202,12 +207,12 @@ function outputCard(message: string, index: number, total: number): HTMLElement 
   const button = document.createElement("button");
   button.className = "copy-button";
   button.type = "button";
-  button.textContent = "⧉";
+  button.append(icon("copy"));
   button.setAttribute("aria-label", `Copy message${total > 1 ? ` ${index + 1}` : ""}`);
   button.title = `Copy message${total > 1 ? ` ${index + 1}` : ""}`;
   button.addEventListener("click", async () => {
     if (await copyText(message)) {
-      showCopied(button, "✓");
+      showCopied(button);
       markCopied(index);
       status.textContent = `${total > 1 ? `Message ${index + 1}` : "Output"} copied`;
     }
@@ -333,20 +338,37 @@ function restorePreferences(): void {
 function removeStoredDraft(): void {
   try { sessionStorage.removeItem(storage.source); sessionStorage.removeItem(storage.progress); } catch { /* Nothing else to clear. */ }
 }
-function showCopied(button: HTMLButtonElement, label: string): void {
-  const previous = button.textContent;
-  button.textContent = label;
+function showCopied(button: HTMLButtonElement): void {
+  const previous = Array.from(button.childNodes, (node) => node.cloneNode(true));
+  setButtonContent(button, "check");
   button.classList.add("copied");
   window.setTimeout(() => {
-    button.textContent = previous;
+    button.replaceChildren(...previous);
     button.classList.remove("copied");
   }, 1_400);
 }
-function emptyState(text: string): HTMLElement {
+function emptyState(): HTMLElement {
   const element = document.createElement("div");
   element.className = "empty-state";
-  element.textContent = text;
+  element.append(icon("down"));
   return element;
+}
+function setButtonContent(button: HTMLButtonElement, name: IconName, label?: string): void {
+  button.replaceChildren(icon(name));
+  if (label) {
+    const text = document.createElement("span");
+    text.textContent = label;
+    button.append(text);
+  }
+}
+function icon(name: IconName): SVGSVGElement {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("icon");
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", `/icons.svg#${name}`);
+  svg.append(use);
+  return svg;
 }
 function requiredElement<T extends HTMLElement = HTMLElement>(id: string): T {
   const element = document.getElementById(id);

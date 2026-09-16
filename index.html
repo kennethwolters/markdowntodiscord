@@ -25,10 +25,10 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="/">Markdown <span aria-hidden="true">→</span> Discord</a>
+      <a class="brand" href="/">Markdown <svg class="brand-arrow icon" aria-hidden="true"><use href="/icons.svg#arrow-right" /></svg> Discord</a>
       <div class="header-actions">
         <a href="/discord-markdown-guide/">Guide</a>
-        <a href="https://github.com/kennethwolters/markdowntodiscord" rel="noopener noreferrer">Source ↗</a>
+        <a href="https://github.com/kennethwolters/markdowntodiscord" rel="noopener noreferrer">Source <svg class="inline-icon icon" aria-hidden="true"><use href="/icons.svg#external" /></svg></a>
       </div>
     </header>
 
@@ -47,33 +47,33 @@
             <h2>Markdown</h2>
             <div class="tools">
               <input id="file-input" class="sr-only" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" aria-label="Open a Markdown file" />
-              <button class="icon-button" id="open-file" type="button" aria-label="Open a Markdown file" title="Open .md file">↑</button>
-              <button class="icon-button" id="clear" type="button" aria-label="Clear Markdown" title="Clear">×</button>
+              <button class="icon-button" id="open-file" type="button" aria-label="Open a Markdown file" title="Open .md file"><svg class="icon" aria-hidden="true"><use href="/icons.svg#upload" /></svg></button>
+              <button class="icon-button" id="clear" type="button" aria-label="Clear Markdown" title="Clear"><svg class="icon" aria-hidden="true"><use href="/icons.svg#close" /></svg></button>
             </div>
           </div>
           <label class="sr-only" for="source">Markdown</label>
           <textarea id="source" spellcheck="false" placeholder="Paste Markdown…" autofocus></textarea>
           <div class="panel-footer">
             <span><span aria-hidden="true">#</span> <span id="source-count">0</span></span>
-            <span class="tab-state" title="Draft saved only in this tab" aria-label="Draft saved only in this tab">◷</span>
+            <span class="tab-state" title="Draft saved only in this tab" aria-label="Draft saved only in this tab"><svg class="icon" aria-hidden="true"><use href="/icons.svg#history" /></svg></span>
           </div>
         </div>
 
-        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-arrow" aria-hidden="true"><svg class="icon"><use href="/icons.svg#arrow-right" /></svg></div>
 
         <div class="panel output-panel">
           <div class="panel-heading">
             <h2>Discord</h2>
-            <button class="copy-all" id="copy-all" type="button" disabled aria-label="Copy output" title="Copy output">⧉</button>
+            <button class="copy-all" id="copy-all" type="button" disabled aria-label="Copy output" title="Copy output"><svg class="icon" aria-hidden="true"><use href="/icons.svg#copy" /></svg></button>
           </div>
           <div id="conversion-status" class="sr-only" role="status" aria-live="polite"></div>
           <div id="warnings" class="warnings"></div>
           <div id="outputs" class="outputs">
-            <div class="empty-state" aria-hidden="true">↓</div>
+            <div class="empty-state" aria-hidden="true"><svg class="icon"><use href="/icons.svg#down" /></svg></div>
           </div>
           <div class="panel-footer output-footer">
             <label class="toggle" title="Prevent accidental notifications">
-              <span aria-hidden="true">@</span>
+              <svg class="icon" aria-hidden="true"><use href="/icons.svg#at" /></svg>
               <span class="sr-only">Prevent accidental mentions</span>
               <input id="neutralize" type="checkbox" checked />
             </label>
