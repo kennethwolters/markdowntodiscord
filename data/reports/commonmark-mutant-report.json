@@ -24,8 +24,7 @@
   "multipleMessages": 0,
   "warningCounts": {
     "html-flattened": 70,
-    "unsafe-url": 41,
-    "unresolved-reference": 1
+    "unsafe-url": 42
   },
   "claims": "Controlled synthetic robustness cases only; converter output is not stored or labeled as human ground truth."
 }

@@ -6,15 +6,15 @@
   "successful": 652,
   "failures": [],
   "warningCounts": {
-    "unsafe-url": 126,
+    "unsafe-url": 127,
     "html-flattened": 91,
-    "unresolved-reference": 1
+    "unresolved-reference": 5
   },
   "outputMessageCounts": {
     "one": 652,
     "multiple": 0
   },
-  "emptyOutputs": 12,
+  "emptyOutputs": 15,
   "maxOutputCodePoints": 172,
   "maxMessagesPerFixture": 1,
   "note": "Execution/capacity report only. CommonMark expected HTML is not Discord user-preference ground truth."
