@@ -20,15 +20,22 @@
       <a class="brand" href="/">Markdown <span aria-hidden="true">→</span> Discord</a>
       <div class="header-actions">
         <a href="/discord-markdown-guide/">Guide</a>
-        <span class="local-badge" title="Conversion happens in this browser"><span aria-hidden="true"></span> Local</span>
       </div>
     </header>
 
     <main>
+      <section class="intro">
+        <h1>Paste Markdown.<br />Send it to Discord.</h1>
+        <div class="intro-copy">
+          <p>Tables, code blocks, links, and long messages—ready to paste.</p>
+          <p class="trust-copy">Conversion happens locally. Nothing leaves your browser.</p>
+        </div>
+      </section>
+
       <section class="workspace" aria-label="Markdown to Discord converter">
         <div class="panel input-panel">
           <div class="panel-heading">
-            <h1>Markdown</h1>
+            <h2>Markdown</h2>
             <div class="tools">
               <input id="file-input" class="sr-only" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" />
               <button class="icon-button" id="open-file" type="button" aria-label="Open a Markdown file" title="Open .md file">↑</button>
@@ -71,7 +78,6 @@
       </div>
     </main>
 
-    <footer>CommonMark · GFM · Discord</footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
