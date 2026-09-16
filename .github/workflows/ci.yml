@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run fixtures:validate
+      - run: npm run loop:validate
+      - run: npm run loop:replay
       - run: npm run analyze:commonmark
       - run: npm run mutants:generate
       - run: python3 -m py_compile scripts/mine_wildchat.py

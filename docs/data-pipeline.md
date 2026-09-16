@@ -72,6 +72,20 @@ npm run data:wildchat:scan
 
 The fetcher verifies every shard against the committed byte length and SHA-256 manifest and automatically discards invalid complete/oversized partial files. The scanner uses pinned `pyarrow` through `uv`, reads one Parquet row group at a time, retains assistant text only in memory, and atomically checkpoints after each row group. `assistantTurns` means assistant-role turns with string content and is the denominator for feature rates; `conversations` counts Parquet rows. Reports contain aggregate counts only and exclude prompts, message text, IP hashes, headers, and geography.
 
+## Closed-loop public baseline
+
+The first agentic-optimization substrate contains policy gold cases plus invariant-only CommonMark and controlled-mutation cases. Synthetic and CommonMark cases do not become semantic Discord ground truth.
+
+```bash
+npm run loop:prepare
+npm run loop:validate
+npm run loop:replay
+```
+
+`loop:prepare` assigns train, validation, and public-test partitions by SHA-256 of source lineage, keeping every mutant with its CommonMark parent. It runs every conversion twice, checks determinism, capacity, fence balance, active-mention absence, and conformance with the configured mention policy. Explicit mention opt-out remains policy-conformant but is reported separately from active-mention absence. The command refuses to publish a baseline with any gold or gating-invariant failure, then atomically writes `data/loop/baseline-v1/`. The manifest binds source files, converter/dependency hashes, Node, platform, architecture, ICU, Unicode, and segmentation locale.
+
+`loop:validate` compiles all loop JSON Schemas, binds every case to its source record and content hash, recomputes source/artifact/converter hashes, verifies lineage partitions, and independently recomputes the report. `loop:replay` executes every conversion without writing and requires byte-exact agreement with committed cases and metrics. CI runs both. Replay fails closed unless Node, ICU, Unicode, and the segmentation locale exactly match the manifest's `node-icu-unicode-locale-v1` policy. Platform and architecture are recorded but may differ because the replayed converter and parser dependency graph are pure JavaScript; any future native or platform-sensitive dependency requires a new compatibility policy. The private challenge set is deliberately absent from this public baseline.
+
 ## Operational rules
 
 1. Run one acquisition or transformation stage at a time.

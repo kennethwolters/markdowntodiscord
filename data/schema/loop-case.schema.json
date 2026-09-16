@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/loop-case-v1.json",
+  "title": "Agentic optimization baseline case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "source", "split", "labelClass", "categories", "conversion", "invariants"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path", "recordId", "contentSha256", "lineageId"],
+      "properties": {
+        "kind": { "enum": ["policy", "commonmark", "mutant", "github", "wildchat", "oasst", "synthetic", "observed"] },
+        "path": { "type": "string", "minLength": 1 },
+        "recordId": { "type": "string", "minLength": 1 },
+        "contentSha256": { "$ref": "#/$defs/sha256" },
+        "lineageId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "split": { "enum": ["train", "validation", "public-test", "challenge"] },
+    "labelClass": { "enum": ["gold", "invariant-only", "triage", "candidate"] },
+    "categories": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "conversion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messages", "warningCodes", "deterministic"],
+      "properties": {
+        "messages": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "warningCodes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "deterministic": { "type": "boolean" }
+      }
+    },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["noCrash", "withinCapacity", "balancedFences", "activeMentionsAbsent", "mentionPolicyConformant"],
+      "properties": {
+        "noCrash": { "type": "boolean" },
+        "withinCapacity": { "type": "boolean" },
+        "balancedFences": { "type": "boolean" },
+        "activeMentionsAbsent": { "type": "boolean" },
+        "mentionPolicyConformant": { "type": "boolean" }
+      }
+    },
+    "gold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "expectedMessages", "expectedWarningCodes", "exactMessagesMatch", "warningCodesMatch"],
+      "properties": {
+        "origin": { "enum": ["spec", "policy", "observed", "human"] },
+        "expectedMessages": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "expectedWarningCodes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "exactMessagesMatch": { "type": "boolean" },
+        "warningCodesMatch": { "type": "boolean" },
+        "observationIdentity": { "$ref": "#/$defs/observationIdentity" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "labelClass": { "const": "gold" } }, "required": ["labelClass"] },
+      "then": { "required": ["gold"] }
+    },
+    {
+      "if": { "properties": { "labelClass": { "enum": ["invariant-only", "triage", "candidate"] } }, "required": ["labelClass"] },
+      "then": { "not": { "required": ["gold"] } }
+    },
+    {
+      "if": { "properties": { "gold": { "type": "object", "properties": { "origin": { "const": "observed" } }, "required": ["origin"] } }, "required": ["gold"] },
+      "then": {
+        "properties": {
+          "gold": { "type": "object", "required": ["observationIdentity"] },
+          "source": { "type": "object", "properties": { "kind": { "const": "observed" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "gold": { "type": "object", "properties": { "origin": { "const": "policy" } }, "required": ["origin"] } }, "required": ["gold"] },
+      "then": {
+        "properties": {
+          "source": { "type": "object", "properties": { "kind": { "const": "policy" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "gold": { "type": "object", "properties": { "origin": { "const": "spec" } }, "required": ["origin"] } }, "required": ["gold"] },
+      "then": {
+        "properties": {
+          "source": { "type": "object", "properties": { "kind": { "const": "commonmark" } } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "observationIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clientSurface", "clientVersion", "releaseChannel", "operatingSystem", "locale", "capturedAt", "settings", "mentionPolicy", "sourceSha256", "payloadSha256", "artifactSha256"],
+      "properties": {
+        "clientSurface": { "enum": ["web", "desktop", "android", "ios"] },
+        "clientVersion": { "type": "string", "minLength": 1 },
+        "releaseChannel": { "type": "string", "minLength": 1 },
+        "operatingSystem": { "type": "string", "minLength": 1 },
+        "locale": { "type": "string", "minLength": 1 },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "settings": { "type": "string" },
+        "mentionPolicy": { "type": "string", "minLength": 1 },
+        "sourceSha256": { "$ref": "#/$defs/sha256" },
+        "payloadSha256": { "$ref": "#/$defs/sha256" },
+        "artifactSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

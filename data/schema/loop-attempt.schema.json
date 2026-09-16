@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/loop-attempt-v1.json",
+  "title": "Pre-registered optimization attempt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "attemptId", "runId", "clusterHash", "status", "preregistration", "patch", "gateResults", "decision"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "attemptId": { "type": "string", "minLength": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "clusterHash": { "$ref": "#/$defs/sha256" },
+    "status": { "enum": ["registered", "running", "gated", "accepted", "rejected"] },
+    "preregistration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primaryMetric", "protectedStrata", "minimumSampleSize", "superiorityTest", "nonInferiorityMargin", "familyAlpha", "multiplicity", "maximumAttempts"],
+      "properties": {
+        "primaryMetric": { "type": "string", "minLength": 1 },
+        "protectedStrata": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "minimumSampleSize": { "type": "integer", "minimum": 1 },
+        "superiorityTest": { "type": "string", "minLength": 1 },
+        "nonInferiorityMargin": { "type": "number", "maximum": 0 },
+        "familyAlpha": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.05 },
+        "multiplicity": { "const": "holm-bonferroni" },
+        "maximumAttempts": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "patch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseCommit", "diffSha256", "changedPaths"],
+      "properties": {
+        "baseCommit": { "type": "string", "minLength": 1 },
+        "diffSha256": { "$ref": "#/$defs/sha256" },
+        "changedPaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "gateResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gate", "passed", "evidenceSha256"],
+        "properties": {
+          "gate": { "type": "string", "minLength": 1 },
+          "passed": { "type": "boolean" },
+          "evidenceSha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "decision": { "enum": ["pending", "accept", "reject"] },
+    "decisionRationale": { "type": "string" }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}

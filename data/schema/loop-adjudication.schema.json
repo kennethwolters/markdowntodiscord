@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/loop-adjudication-v1.json",
+  "title": "Blinded judgment adjudication",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "adjudicationId", "caseHash", "judgmentHashes", "rubricVersion", "decision", "labelAuthority", "rationale"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "adjudicationId": { "type": "string", "minLength": 1 },
+    "caseHash": { "$ref": "#/$defs/sha256" },
+    "judgmentHashes": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/sha256" } },
+    "rubricVersion": { "type": "string", "minLength": 1 },
+    "decision": { "enum": ["pass", "fail", "needs-deterministic-check", "needs-independent-critic", "quarantine"] },
+    "labelAuthority": { "enum": ["triage-only", "existing-gold-confirmed"] },
+    "failureCategories": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "rationale": { "type": "string", "minLength": 1 },
+    "supersedes": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}

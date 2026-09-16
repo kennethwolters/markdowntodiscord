@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/loop-judgment-v1.json",
+  "title": "Blinded agent judgment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "judgmentId", "caseHash", "critic", "promptSha256", "rubricVersion", "scores", "verdict", "citations", "confidence"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "judgmentId": { "type": "string", "minLength": 1 },
+    "caseHash": { "$ref": "#/$defs/sha256" },
+    "critic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "provider", "model"],
+      "properties": {
+        "role": { "const": "critic" },
+        "provider": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "promptSha256": { "$ref": "#/$defs/sha256" },
+    "rubricVersion": { "type": "string", "minLength": 1 },
+    "presentationNonce": { "type": "string" },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semanticPreservation", "discordCompatibility", "readability", "continuity", "formatBalance", "safety", "omissionOrInvention", "overallAcceptability"],
+      "properties": {
+        "semanticPreservation": { "$ref": "#/$defs/score" },
+        "discordCompatibility": { "$ref": "#/$defs/score" },
+        "readability": { "$ref": "#/$defs/score" },
+        "continuity": { "$ref": "#/$defs/score" },
+        "formatBalance": { "$ref": "#/$defs/score" },
+        "safety": { "$ref": "#/$defs/score" },
+        "omissionOrInvention": { "$ref": "#/$defs/score" },
+        "overallAcceptability": { "$ref": "#/$defs/score" }
+      }
+    },
+    "verdict": { "enum": ["pass", "fail", "abstain"] },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["side", "start", "end", "rule", "explanation"],
+        "properties": {
+          "side": { "enum": ["source", "output"] },
+          "start": { "type": "integer", "minimum": 0 },
+          "end": { "type": "integer", "minimum": 0 },
+          "rule": { "type": "string", "minLength": 1 },
+          "explanation": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "abstentionReason": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [{ "if": { "properties": { "verdict": { "const": "abstain" } } }, "then": { "required": ["abstentionReason"] } }],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "score": { "type": "integer", "minimum": 1, "maximum": 5 }
+  }
+}

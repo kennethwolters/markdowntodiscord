@@ -16,6 +16,9 @@
     "fixtures:validate": "tsx scripts/validate-fixtures.ts data/fixtures/*.jsonl",
     "analyze:commonmark": "tsx scripts/analyze-commonmark.ts",
     "mutants:generate": "tsx scripts/generate-mutants.ts",
+    "loop:prepare": "tsx scripts/prepare-loop-baseline.ts",
+    "loop:replay": "tsx scripts/prepare-loop-baseline.ts --check",
+    "loop:validate": "tsx scripts/validate-loop-artifacts.ts",
     "data:oasst:fetch": "node scripts/fetch-oasst.mjs",
     "data:oasst:scan": "node scripts/mine-oasst.mjs",
     "data:oasst:sample": "node scripts/sample-oasst-candidates.mjs",
@@ -32,6 +35,8 @@
   "devDependencies": {
     "@types/mdast": "4.0.4",
     "@types/node": "^22.20.2",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "fast-check": "^4.10.1",
     "tsx": "^4.23.13",
     "typescript": "7.0.2",

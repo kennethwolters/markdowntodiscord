@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "runId": "public-baseline-v1",
+  "cases": 1170,
+  "splitCounts": {
+    "train": 805,
+    "validation": 244,
+    "public-test": 121
+  },
+  "kindCounts": {
+    "commonmark": 652,
+    "mutant": 500,
+    "policy": 18
+  },
+  "gold": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0
+  },
+  "invariants": {
+    "failedCases": 0,
+    "deterministic": 1170,
+    "withinCapacity": 1170,
+    "balancedFences": 1170,
+    "activeMentionsAbsent": 1169,
+    "mentionPolicyConformant": 1170
+  },
+  "warningCounts": {
+    "unsafe-url": 156,
+    "html-flattened": 125,
+    "unresolved-reference": 2,
+    "lossy-table": 1,
+    "math-degraded": 1,
+    "mentions-neutralized": 1
+  },
+  "failures": [],
+  "interpretation": "Gold metrics apply only to policy fixtures. Other cases measure deterministic invariants and are not semantic correctness labels."
+}
