@@ -11,5 +11,8 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+/version.json
+  Cache-Control: no-store
+
 /discord-markdown-guide/index.html
   Cache-Control: public, max-age=0, must-revalidate

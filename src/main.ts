@@ -10,8 +10,12 @@ const copyNext = requiredElement<HTMLButtonElement>("copy-all");
 const sourceCount = requiredElement<HTMLSpanElement>("source-count");
 const messageCount = requiredElement<HTMLSpanElement>("message-count");
 const examplePicker = requiredElement<HTMLSelectElement>("example-picker");
+const fileInput = requiredElement<HTMLInputElement>("file-input");
+const inputPanel = source.closest<HTMLElement>(".input-panel")!;
+const undoClear = requiredElement<HTMLDivElement>("undo-clear");
 
-const storage = { source: "markdown-to-discord:draft", neutralize: "markdown-to-discord:neutralize" };
+const storage = { source: "markdown-to-discord:tab-draft", neutralize: "markdown-to-discord:neutralize", progress: "markdown-to-discord:copy-progress" };
+const maxFileBytes = 2 * 1024 * 1024;
 const examples: Record<string, string> = {
   mixed: `# Release notes
 
@@ -62,27 +66,57 @@ const warningHelp: Record<ConversionWarning["code"], { title: string; action: st
 let currentMessages: string[] = [];
 let nextCopyIndex = 0;
 let timer = 0;
+let undoTimer = 0;
+let clearedDraft: string | undefined;
+let clearedCopyProgress: number[] = [];
+const copiedIndices = new Set<number>();
 restorePreferences();
 
-source.addEventListener("input", scheduleRender);
+source.addEventListener("input", () => { if (clearedDraft !== undefined) { clearedDraft = undefined; hideUndo(); } scheduleRender(); });
+source.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !copyNext.disabled) { event.preventDefault(); copyNext.click(); }
+});
 neutralize.addEventListener("change", () => { persist(); render(); });
 requiredElement("load-example").addEventListener("click", () => {
   source.value = examples[examplePicker.value] ?? examples.mixed;
+  clearedDraft = undefined;
+  hideUndo();
   persist();
   render();
   source.focus();
 });
+requiredElement("open-file").addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", async () => { const file = fileInput.files?.[0]; if (file) await loadFile(file); fileInput.value = ""; });
+for (const eventName of ["dragenter", "dragover"]) inputPanel.addEventListener(eventName, (event) => { event.preventDefault(); inputPanel.classList.add("dragging"); });
+for (const eventName of ["dragleave", "drop"]) inputPanel.addEventListener(eventName, (event) => { event.preventDefault(); inputPanel.classList.remove("dragging"); });
+inputPanel.addEventListener("drop", async (event) => { const file = event.dataTransfer?.files[0]; if (file) await loadFile(file); });
 requiredElement("clear").addEventListener("click", () => {
+  if (!source.value) return;
+  clearedDraft = source.value;
+  clearedCopyProgress = [...copiedIndices];
   source.value = "";
   removeStoredDraft();
   render();
+  showUndo();
+  source.focus();
+});
+requiredElement("undo-clear-button").addEventListener("click", () => {
+  if (clearedDraft === undefined) return;
+  source.value = clearedDraft;
+  const progress = [...clearedCopyProgress];
+  clearedDraft = undefined;
+  clearedCopyProgress = [];
+  hideUndo();
+  persist();
+  render();
+  for (const index of progress) if (index < currentMessages.length) markCopied(index);
   source.focus();
 });
 copyNext.addEventListener("click", async () => {
   if (currentMessages.length === 0) return;
   const copiedIndex = nextCopyIndex;
   if (!await copyText(currentMessages[copiedIndex])) return;
-  nextCopyIndex = (copiedIndex + 1) % currentMessages.length;
+  markCopied(copiedIndex);
   const announcement = currentMessages.length === 1 ? "Output copied" : `Message ${copiedIndex + 1} of ${currentMessages.length} copied`;
   status.textContent = announcement;
   copyNext.textContent = announcement;
@@ -102,6 +136,7 @@ function scheduleRender(): void {
 
 function render(): void {
   const value = source.value;
+  copiedIndices.clear();
   sourceCount.textContent = `${Array.from(value).length.toLocaleString()} characters`;
   outputs.replaceChildren();
   warnings.replaceChildren();
@@ -120,6 +155,7 @@ function render(): void {
   const result = convertMarkdown(value, { neutralizeMentions: neutralize.checked });
   currentMessages = result.messages.filter((message) => message.length > 0);
   nextCopyIndex = 0;
+  restoreCopyProgress();
   copyNext.disabled = currentMessages.length === 0;
   updateCopyButton();
   messageCount.textContent = `${currentMessages.length} ${currentMessages.length === 1 ? "message" : "messages"}`;
@@ -127,6 +163,7 @@ function render(): void {
   renderWarnings(result.warnings);
   status.textContent = `${currentMessages.length} ${currentMessages.length === 1 ? "message" : "messages"} ready${result.warnings.length ? ` with ${result.warnings.length} conversion warnings` : ""}.`;
   currentMessages.forEach((message, index) => outputs.append(outputCard(message, index, currentMessages.length)));
+  for (const index of copiedIndices) applyCopiedState(index);
 }
 
 function renderWarnings(items: ConversionWarning[]): void {
@@ -151,15 +188,20 @@ function renderWarnings(items: ConversionWarning[]): void {
 }
 
 function updateCopyButton(): void {
-  copyNext.textContent = currentMessages.length <= 1
-    ? "Copy output"
-    : `Copy message ${nextCopyIndex + 1} of ${currentMessages.length}`;
+  const complete = currentMessages.length > 1 && copiedIndices.size === currentMessages.length;
+  copyNext.disabled = currentMessages.length === 0 || complete;
+  copyNext.textContent = complete
+    ? `All ${currentMessages.length} messages copied`
+    : currentMessages.length <= 1
+      ? "Copy output"
+      : `Copy message ${nextCopyIndex + 1} of ${currentMessages.length}`;
   copyNext.setAttribute("aria-label", copyNext.textContent);
 }
 
 function outputCard(message: string, index: number, total: number): HTMLElement {
   const card = document.createElement("article");
   card.className = "message-card";
+  card.dataset.messageIndex = String(index);
   card.setAttribute("aria-labelledby", `message-${index + 1}-label`);
   const heading = document.createElement("div");
   heading.className = "message-heading";
@@ -180,6 +222,7 @@ function outputCard(message: string, index: number, total: number): HTMLElement 
   button.addEventListener("click", async () => {
     if (await copyText(message)) {
       showCopied(button, "Copied");
+      markCopied(index);
       status.textContent = `${total > 1 ? `Message ${index + 1}` : "Output"} copied`;
     }
   });
@@ -205,21 +248,80 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
+function markCopied(index: number): void {
+  copiedIndices.add(index);
+  applyCopiedState(index);
+  nextCopyIndex = currentMessages.findIndex((_, candidate) => !copiedIndices.has(candidate));
+  if (nextCopyIndex < 0) nextCopyIndex = currentMessages.length;
+  saveCopyProgress();
+  updateCopyButton();
+}
+function applyCopiedState(index: number): void {
+  const card = outputs.querySelector<HTMLElement>(`[data-message-index="${index}"]`);
+  card?.classList.add("message-copied");
+  const label = card?.querySelector<HTMLElement>(".message-heading span:first-child");
+  if (label && !label.textContent?.startsWith("✓ ")) label.textContent = `✓ ${label.textContent}`;
+}
+async function loadFile(file: File): Promise<void> {
+  if (!isMarkdownFile(file)) { showUiError("Choose a Markdown or plain-text file (.md, .markdown, or .txt)."); return; }
+  if (file.size > maxFileBytes) { showUiError("That file is larger than 2 MB. Choose a smaller Markdown file."); return; }
+  if (source.value && !window.confirm("Replace the current draft with this file?")) return;
+  try {
+    source.value = (await file.text()).replace(/^\uFEFF/, "");
+    clearedDraft = undefined;
+    hideUndo();
+    persist();
+    render();
+    source.focus();
+    status.textContent = `${file.name} loaded locally.`;
+  } catch { showUiError("The file could not be read. It was not uploaded."); }
+}
+function isMarkdownFile(file: File): boolean { return /\.(?:md|markdown|txt)$/i.test(file.name) || ["text/markdown", "text/plain"].includes(file.type); }
+function showUiError(message: string): void {
+  let error = document.getElementById("input-error");
+  if (!error) { error = document.createElement("div"); error.id = "input-error"; error.className = "warning error"; error.setAttribute("role", "alert"); warnings.prepend(error); }
+  error.textContent = message;
+}
+function showUndo(): void {
+  window.clearTimeout(undoTimer);
+  undoClear.hidden = false;
+  undoTimer = window.setTimeout(() => { clearedDraft = undefined; hideUndo(); }, 10_000);
+}
+function hideUndo(): void { window.clearTimeout(undoTimer); undoClear.hidden = true; }
+function progressIdentity(): string {
+  let hash = 2166136261;
+  const value = `${neutralize.checked}\0${source.value}\0${currentMessages.join("\0")}`;
+  for (let index = 0; index < value.length; index++) { hash ^= value.charCodeAt(index); hash = Math.imul(hash, 16777619); }
+  return (hash >>> 0).toString(16);
+}
+function saveCopyProgress(): void {
+  try { sessionStorage.setItem(storage.progress, JSON.stringify({ identity: progressIdentity(), copied: [...copiedIndices] })); } catch { /* Progress remains usable in memory. */ }
+}
+function restoreCopyProgress(): void {
+  copiedIndices.clear();
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(storage.progress) ?? "null");
+    if (saved?.identity === progressIdentity() && Array.isArray(saved.copied)) for (const index of saved.copied) if (Number.isInteger(index) && index >= 0 && index < currentMessages.length) copiedIndices.add(index);
+  } catch { /* Ignore malformed or unavailable session state. */ }
+  nextCopyIndex = currentMessages.findIndex((_, index) => !copiedIndices.has(index));
+  if (nextCopyIndex < 0) nextCopyIndex = currentMessages.length;
+}
 function persist(): void {
   try {
-    localStorage.setItem(storage.source, source.value);
+    sessionStorage.setItem(storage.source, source.value);
     localStorage.setItem(storage.neutralize, String(neutralize.checked));
   } catch { /* Conversion remains usable when storage is blocked. */ }
 }
 function restorePreferences(): void {
   try {
-    source.value = localStorage.getItem(storage.source) ?? "";
+    localStorage.removeItem("markdown-to-discord:draft");
+    source.value = sessionStorage.getItem(storage.source) ?? "";
     const savedNeutralize = localStorage.getItem(storage.neutralize);
     if (savedNeutralize !== null) neutralize.checked = savedNeutralize !== "false";
   } catch { /* Use HTML defaults when storage is blocked. */ }
 }
 function removeStoredDraft(): void {
-  try { localStorage.removeItem(storage.source); } catch { /* Nothing else to clear. */ }
+  try { sessionStorage.removeItem(storage.source); sessionStorage.removeItem(storage.progress); } catch { /* Nothing else to clear. */ }
 }
 function showCopied(button: HTMLButtonElement, label: string): void {
   const previous = button.textContent;

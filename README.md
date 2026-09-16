@@ -19,3 +19,13 @@ npm run analyze:commonmark
 ```
 
 The fixture command downloads the pinned CommonMark 0.31.2 specification examples and writes a provenance manifest under `data/spec/`. The resumable corpus workflow is documented in [`docs/data-pipeline.md`](./docs/data-pipeline.md); current corpus measurements are summarized in [`docs/data-findings.md`](./docs/data-findings.md).
+
+## Release
+
+```bash
+npm run release:check
+git commit -am "release changes"
+npm run deploy
+```
+
+`deploy` requires a clean worktree, runs the complete release gate, deploys `dist/` to the `markdown-to-discord` Cloudflare Pages project with pinned Wrangler, waits for the canonical hostname to serve the commit-specific `version.json`, and verifies the converter, guide, sitemap, and robots file. Override `CLOUDFLARE_PAGES_PROJECT`, `CLOUDFLARE_PAGES_BRANCH`, or `CANONICAL_URL` only when deliberately targeting another Pages environment.

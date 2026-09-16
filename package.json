@@ -12,6 +12,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "release:check": "npm audit --omit=dev && npm test && npm run fixtures:validate && npm run typecheck && npm run loop:validate && npm run build",
+    "deploy": "bash scripts/deploy.sh",
     "fixtures:commonmark": "node scripts/fetch-commonmark-fixtures.mjs",
     "fixtures:validate": "tsx scripts/validate-fixtures.ts data/fixtures/*.jsonl",
     "analyze:commonmark": "tsx scripts/analyze-commonmark.ts",
