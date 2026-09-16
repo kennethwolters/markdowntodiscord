@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "evalSetId": "semantic-eval-consensus-v2",
+  "status": "initial-silver-baseline",
+  "candidates": {
+    "total": 120,
+    "sources": {
+      "wildchat": 53,
+      "oasst": 52,
+      "synthetic": 15
+    },
+    "portfolio": {
+      "representative-natural": 40,
+      "long-splitting": 25,
+      "feature-interaction": 20,
+      "high-risk-discord": 20,
+      "boundary-adversarial": 15
+    },
+    "splits": {
+      "validation": 97,
+      "challenge": 23
+    },
+    "highImpact": 80,
+    "interactions": 54,
+    "over2000CodePoints": 41
+  },
+  "curation": {
+    "dualLunaDirectConsensus": 0,
+    "astraAdjudicatedOrAuthored": 104,
+    "quarantined": 16,
+    "finalSilverLabels": 104,
+    "quarantineSlices": {
+      "bySplit": {
+        "challenge": 2,
+        "validation": 14
+      },
+      "bySource": {
+        "oasst": 5,
+        "synthetic": 3,
+        "wildchat": 8
+      },
+      "byBucket": {
+        "boundary-adversarial": 3,
+        "feature-interaction": 3,
+        "high-risk-discord": 3,
+        "long-splitting": 4,
+        "representative-natural": 3
+      }
+    }
+  },
+  "validation": {
+    "total": 83,
+    "passed": 66,
+    "failed": 17,
+    "passRate": 0.7951807228915663,
+    "wilson95": {
+      "lower": 0.6962453321422067,
+      "upper": 0.8680012922860255
+    },
+    "byBucket": {
+      "boundary-adversarial": {
+        "total": 8,
+        "passed": 5,
+        "passRate": 0.625,
+        "wilson95": {
+          "lower": 0.30574239460262737,
+          "upper": 0.8631557141764026
+        }
+      },
+      "feature-interaction": {
+        "total": 11,
+        "passed": 9,
+        "passRate": 0.8181818181818182,
+        "wilson95": {
+          "lower": 0.523019438039156,
+          "upper": 0.9486323102539149
+        }
+      },
+      "high-risk-discord": {
+        "total": 14,
+        "passed": 11,
+        "passRate": 0.7857142857142857,
+        "wilson95": {
+          "lower": 0.524107694133997,
+          "upper": 0.9242861328730683
+        }
+      },
+      "long-splitting": {
+        "total": 16,
+        "passed": 10,
+        "passRate": 0.625,
+        "wilson95": {
+          "lower": 0.38641040545502714,
+          "upper": 0.8151876744113636
+        }
+      },
+      "representative-natural": {
+        "total": 34,
+        "passed": 31,
+        "passRate": 0.9117647058823529,
+        "wilson95": {
+          "lower": 0.7703951343719113,
+          "upper": 0.9695340563253514
+        }
+      }
+    },
+    "bySource": {
+      "oasst": {
+        "total": 34,
+        "passed": 25,
+        "passRate": 0.7352941176470589,
+        "wilson95": {
+          "lower": 0.5688285871705534,
+          "upper": 0.8539880932278825
+        }
+      },
+      "synthetic": {
+        "total": 8,
+        "passed": 5,
+        "passRate": 0.625,
+        "wilson95": {
+          "lower": 0.30574239460262737,
+          "upper": 0.8631557141764026
+        }
+      },
+      "wildchat": {
+        "total": 41,
+        "passed": 36,
+        "passRate": 0.8780487804878049,
+        "wilson95": {
+          "lower": 0.7445578847902312,
+          "upper": 0.9467666353142228
+        }
+      }
+    },
+    "byRisk": {
+      "lossy": {
+        "total": 10,
+        "passed": 5,
+        "passRate": 0.5,
+        "wilson95": {
+          "lower": 0.236593090512564,
+          "upper": 0.7634069094874361
+        }
+      },
+      "normal": {
+        "total": 70,
+        "passed": 61,
+        "passRate": 0.8714285714285714,
+        "wilson95": {
+          "lower": 0.7733524405057483,
+          "upper": 0.9308589988466248
+        }
+      },
+      "unsafe": {
+        "total": 3,
+        "passed": 0,
+        "passRate": 0,
+        "wilson95": {
+          "lower": 5.551115123125783e-17,
+          "upper": 0.5614970317550454
+        }
+      }
+    },
+    "failureCounts": {
+      "required-text": 11,
+      "text-order": 10,
+      "required-warning": 5,
+      "exact-messages": 1,
+      "forbidden-url": 1,
+      "required-url": 1
+    }
+  },
+  "challenge": {
+    "total": 21,
+    "passed": 16,
+    "failed": 5,
+    "passRate": 0.7619047619047619,
+    "wilson95": {
+      "lower": 0.5490882631704924,
+      "upper": 0.8937198697736354
+    },
+    "byBucket": {
+      "boundary-adversarial": {
+        "total": 4,
+        "passed": 3,
+        "passRate": 0.75,
+        "wilson95": {
+          "lower": 0.30064184258240184,
+          "upper": 0.9544127391902995
+        }
+      },
+      "feature-interaction": {
+        "total": 6,
+        "passed": 5,
+        "passRate": 0.8333333333333334,
+        "wilson95": {
+          "lower": 0.43649717781352987,
+          "upper": 0.9699466302516935
+        }
+      },
+      "high-risk-discord": {
+        "total": 3,
+        "passed": 0,
+        "passRate": 0,
+        "wilson95": {
+          "lower": 5.551115123125783e-17,
+          "upper": 0.5614970317550454
+        }
+      },
+      "long-splitting": {
+        "total": 5,
+        "passed": 5,
+        "passRate": 1,
+        "wilson95": {
+          "lower": 0.5655175352168251,
+          "upper": 1
+        }
+      },
+      "representative-natural": {
+        "total": 3,
+        "passed": 3,
+        "passRate": 1,
+        "wilson95": {
+          "lower": 0.4385029682449546,
+          "upper": 1
+        }
+      }
+    },
+    "bySource": {
+      "oasst": {
+        "total": 13,
+        "passed": 10,
+        "passRate": 0.7692307692307693,
+        "wilson95": {
+          "lower": 0.49743624053272495,
+          "upper": 0.9182047128150143
+        }
+      },
+      "synthetic": {
+        "total": 4,
+        "passed": 3,
+        "passRate": 0.75,
+        "wilson95": {
+          "lower": 0.30064184258240184,
+          "upper": 0.9544127391902995
+        }
+      },
+      "wildchat": {
+        "total": 4,
+        "passed": 3,
+        "passRate": 0.75,
+        "wilson95": {
+          "lower": 0.30064184258240184,
+          "upper": 0.9544127391902995
+        }
+      }
+    },
+    "byRisk": {
+      "lossy": {
+        "total": 3,
+        "passed": 0,
+        "passRate": 0,
+        "wilson95": {
+          "lower": 5.551115123125783e-17,
+          "upper": 0.5614970317550454
+        }
+      },
+      "normal": {
+        "total": 18,
+        "passed": 16,
+        "passRate": 0.8888888888888888,
+        "wilson95": {
+          "lower": 0.672002348698212,
+          "upper": 0.9689804773543876
+        }
+      }
+    },
+    "failureCounts": {
+      "required-warning": 3,
+      "required-text": 2,
+      "text-order": 2,
+      "required-url": 1
+    }
+  },
+  "artifacts": {
+    "candidateManifestSha256": "c58a352ccc72f0e3ffdcd2d5b40c1e69a5890b29902d82697466f8d99f74f99b",
+    "labelsSha256": "abdf1a12d6103198e565bd7890f41214162cce03fa19a0776403a33ea7de2d0b",
+    "quarantineSha256": "cd145b93029136fb901e584a2d0677dc1197ee3fc328177e401b61a172d11451",
+    "curationReportSha256": "e287c19f1e722e749ee1db01af947420bde1df254cc4c68f4063bd25ffbf9bdd",
+    "validationScoreSha256": "2aa8c29b096bb090adfab295e867b5c82ef2f1bfe954e089b119db5c03812f38",
+    "challengeScoreSha256": "ea58af04fa7b31bebcfd25db69498124a2e92eeaa40945633a0790d9eb85bdc5"
+  },
+  "interpretation": "Unweighted stratified diagnostic pass rates among retained labels. Quarantines are reported separately and excluded from pass-rate denominators; these rates are not population estimates.",
+  "authority": "Model-generated semantic silver evidence. This report is not human, specification, policy, or observed-Discord gold; private source text, case IDs, labels, and challenge membership are omitted."
+}

@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/eval-review-v2.json",
+  "title": "Independent model evaluation review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "reviewId", "candidateSetId", "candidateManifestSha256", "reviewerId", "reviewerKind", "modelIdentity", "thinking", "promptVersion", "promptSha256", "rubricVersion", "policySha256", "completedAt", "reviews"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "reviewId": { "type": "string", "minLength": 1 },
+    "candidateSetId": { "const": "semantic-eval-candidates-v2" },
+    "candidateManifestSha256": { "$ref": "#/$defs/sha256" },
+    "reviewerId": { "type": "string", "minLength": 1 },
+    "reviewerKind": { "const": "model" },
+    "modelIdentity": { "const": "openai-codex/gpt-5.6-luna" },
+    "thinking": { "const": "high" },
+    "promptVersion": { "const": "semantic-labeler-prompt-v2" },
+    "promptSha256": { "$ref": "#/$defs/sha256" },
+    "rubricVersion": { "const": "semantic-model-rubric-v2" },
+    "policySha256": { "$ref": "#/$defs/sha256" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "reviews": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/review" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateId", "sourceToken", "privacy", "decision", "categories", "risk", "rationale"],
+      "properties": {
+        "candidateId": { "type": "string", "pattern": "^eval-v2-[a-f0-9]{16}$" },
+        "sourceToken": { "$ref": "#/$defs/sha256" },
+        "privacy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["decision", "piiCategories"],
+          "properties": {
+            "decision": { "enum": ["approved", "reject", "needs-redaction"] },
+            "piiCategories": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "enum": ["name", "email", "phone", "address", "account", "credential", "location", "medical", "other"] }
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "decision": { "enum": ["label", "abstain", "reject"] },
+        "categories": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "risk": { "enum": ["normal", "lossy", "unsafe"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "label": { "$ref": "#/$defs/label" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "decision": { "const": "label" } }, "required": ["decision"] },
+          "then": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+              "label": { "$ref": "#/$defs/label" },
+              "privacy": {
+                "type": "object",
+                "properties": {
+                  "decision": { "const": "approved" },
+                  "piiCategories": { "type": "array", "maxItems": 0 }
+                }
+              }
+            }
+          },
+          "else": { "properties": { "label": false } }
+        }
+      ]
+    },
+    "label": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "acceptableMessageArrays", "expectedWarningCodes"],
+          "properties": {
+            "mode": { "const": "exact" },
+            "acceptableMessageArrays": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+            },
+            "expectedWarningCodes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "assertions"],
+          "properties": {
+            "mode": { "const": "semantic" },
+            "assertions": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["requiredText", "forbiddenText", "requiredUrls", "forbiddenUrls", "requiredWarningCodes", "forbiddenWarningCodes", "forbidActiveMentions"],
+              "properties": {
+                "requiredText": { "$ref": "#/$defs/uniqueStrings" },
+                "forbiddenText": { "$ref": "#/$defs/uniqueStrings" },
+                "requiredUrls": { "$ref": "#/$defs/uniqueStrings" },
+                "forbiddenUrls": { "$ref": "#/$defs/uniqueStrings" },
+                "requiredWarningCodes": { "$ref": "#/$defs/uniqueStrings" },
+                "forbiddenWarningCodes": { "$ref": "#/$defs/uniqueStrings" },
+                "forbidActiveMentions": { "type": "boolean" },
+                "orderedTextGroups": {
+                  "type": "array",
+                  "items": { "type": "array", "minItems": 2, "items": { "type": "string", "minLength": 1 } }
+                }
+              },
+              "anyOf": [
+                { "type": "object", "properties": { "requiredText": { "type": "array", "minItems": 1 } } },
+                { "type": "object", "properties": { "forbiddenText": { "type": "array", "minItems": 1 } } },
+                { "type": "object", "properties": { "requiredUrls": { "type": "array", "minItems": 1 } } },
+                { "type": "object", "properties": { "forbiddenUrls": { "type": "array", "minItems": 1 } } },
+                { "type": "object", "properties": { "requiredWarningCodes": { "type": "array", "minItems": 1 } } },
+                { "type": "object", "properties": { "forbiddenWarningCodes": { "type": "array", "minItems": 1 } } },
+                { "type": "object", "properties": { "forbidActiveMentions": { "const": true } } },
+                { "type": "object", "required": ["orderedTextGroups"], "properties": { "orderedTextGroups": { "type": "array", "minItems": 1 } } }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "uniqueStrings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

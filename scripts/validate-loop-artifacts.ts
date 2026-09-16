@@ -6,6 +6,11 @@ import Ajv2020, { type ValidateFunction } from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
 const schemaPaths = [
+  "data/schema/eval-candidate-packet.schema.json",
+  "data/schema/eval-candidate-manifest.schema.json",
+  "data/schema/eval-review.schema.json",
+  "data/schema/eval-consensus.schema.json",
+  "data/schema/eval-adjudication.schema.json",
   "data/schema/loop-run.schema.json",
   "data/schema/loop-case.schema.json",
   "data/schema/loop-judgment.schema.json",
@@ -34,7 +39,7 @@ for (const path of schemaPaths) {
 }
 
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-validate(validators.get(schemaPaths[0])!, manifest, manifestPath);
+validate(validators.get("data/schema/loop-run.schema.json")!, manifest, manifestPath);
 const requiredSourcePaths = [
   "data/fixtures/discord-policy-v1.jsonl",
   "data/spec/commonmark-0.31.2.jsonl",
@@ -66,7 +71,7 @@ for await (const line of lines) {
   records++;
   const record = JSON.parse(line);
   cases.push(record);
-  validate(validators.get(schemaPaths[1])!, record, `${casesPath}:${records}`);
+  validate(validators.get("data/schema/loop-case.schema.json")!, record, `${casesPath}:${records}`);
   const source = sourceRecords.get(record.id);
   if (!source) throw new Error(`${record.id} does not resolve to a source record`);
   assertEqual(record.source.kind, source.kind, `${record.id} source kind`);
@@ -83,12 +88,12 @@ for await (const line of lines) {
 if (records === 0) throw new Error(`${casesPath} contains no records`);
 const reportPath = "data/loop/baseline-v2/report.json";
 const report = JSON.parse(await readFile(reportPath, "utf8"));
-validate(validators.get(schemaPaths[5])!, report, reportPath);
+validate(validators.get("data/schema/loop-report.schema.json")!, report, reportPath);
 assertEqual(manifest.runId, report.runId, "manifest/report run ID");
 assertEqual(JSON.stringify(report), JSON.stringify(expectedReport(cases, manifest.runId)), "recomputed baseline report");
 const pilotReportPath = "data/reports/critic-pilot-v1.json";
 const pilotReport = JSON.parse(await readFile(pilotReportPath, "utf8"));
-validate(validators.get(schemaPaths[13])!, pilotReport, pilotReportPath);
+validate(validators.get("data/schema/loop-pilot-report.schema.json")!, pilotReport, pilotReportPath);
 assertEqual(pilotReport.selection.policyGold + pilotReport.selection.commonmarkTrainInvariant + pilotReport.selection.mutantTrainInvariant, pilotReport.records, "pilot selection total");
 for (const critic of pilotReport.critics) assertEqual(critic.verdicts.pass + critic.verdicts.fail + critic.verdicts.abstain, pilotReport.records, `${critic.criticId} pilot verdict total`);
 assertEqual(pilotReport.agreement.comparable + pilotReport.agreement.excludedProtocolInvalid, pilotReport.records, "pilot comparison total");
@@ -97,7 +102,7 @@ assertEqual(pilotReport.routing.noReview + pilotReport.routing.disagreement + pi
 assertEqual(pilotReport.adjudication.pass + pilotReport.adjudication.fail, pilotReport.adjudication.records, "pilot adjudication total");
 for (const calibrationReportPath of ["data/reports/critic-calibration-v1.json", "data/reports/critic-calibration-v2.json"]) {
   const calibrationReport = JSON.parse(await readFile(calibrationReportPath, "utf8"));
-  validate(validators.get(schemaPaths[11])!, calibrationReport, calibrationReportPath);
+  validate(validators.get("data/schema/loop-calibration-report.schema.json")!, calibrationReport, calibrationReportPath);
   assertEqual(calibrationReport.controls.positive + calibrationReport.controls.negative, calibrationReport.controls.total, `${calibrationReport.calibrationId} control total`);
   for (const critic of calibrationReport.critics) {
     assertEqual(critic.correct + critic.incorrect + critic.abstained, calibrationReport.controls.total, `${calibrationReport.calibrationId}/${critic.criticId} decision total`);

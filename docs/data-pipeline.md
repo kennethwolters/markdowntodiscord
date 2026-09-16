@@ -46,7 +46,7 @@ npm run data:oasst:scan -- --chunk-size 1000
 
 The second command resumes after the recorded source row. `--reset` resets derived scan state; it never deletes or changes the raw source.
 
-The candidate sampler independently checkpoints a deterministic bottom-k sample per feature. Its private index stores source row numbers and text hashes, but no content or user identifiers. The extraction stage verifies that index and every selected text hash, applies direct-identifier redaction, and writes only to gitignored `data/work/`. Every extracted record remains `private-review-only` and requires human PII review before promotion.
+The candidate sampler independently checkpoints a deterministic bottom-k sample per feature. Its private index stores source row numbers, text hashes, and upstream provenance identifiers, but no message content; treat those identifiers as sensitive local metadata. The extraction stage verifies that index and every selected text hash, applies direct-identifier redaction, and writes only to gitignored `data/work/`. Every extracted record remains `private-review-only` and requires human PII review before promotion.
 
 ```bash
 npm run data:oasst:sample -- --reset --chunk-size 1000 --per-feature 25 --stop-after 2500
@@ -106,6 +106,42 @@ The 500-case pilot packet file is also emitted as two ordered 250-case shards so
 Critic calibration uses 18 correct policy outputs and 18 deterministically corrupted negative controls covering omissions, active-mention invention, unbalanced fences, and over-capacity output. Positive and negative identities live only in the ignored answer key. Critics receive explicit conversion options but not the answer. Outputs must satisfy `loop-critic-output.schema.json` before scoring; protocol-invalid outputs are retained as failed calibration attempts rather than repaired into evidence. The first valid two-model calibration scored 35/36 for Luna and 36/36 for Sol, with 35/36 verdict agreement. Luna's sole false failure rejected intentionally active mentions under `neutralizeMentions=false`. Policy v2 made that override explicit; the fresh policy-v2 calibration then scored 36/36 for both critics with 36/36 agreement. Aggregate evidence is committed in `data/reports/critic-calibration-v1.json` and `data/reports/critic-calibration-v2.json`.
 
 The 500-case pilot produced 470 agreements across 499 protocol-valid comparisons (94.2%), 29 disagreements, and one quarantined citation record. Both critics passed all 18 existing policy-gold controls. A fresh blinded adjudicator routed the 30 reviewed cases to 12 passes and 18 triage-only failures. Seven independently supportable specification/policy behaviors were promoted to deterministic fixtures; baseline v2 contains 1,177 cases, passes all 25 gold fixtures, and has zero invariant failures. Aggregate hashes and authority limitations are recorded in `data/reports/critic-pilot-v1.json`.
+
+## Semantic evaluation curation
+
+The public baseline is regression and invariant coverage, not a hidden semantic holdout. Build the private v2 candidate pools and review jobs with:
+
+```bash
+npm run data:oasst:sample -- --reset
+npm run data:oasst:extract -- --reset
+npm run data:wildchat:sample
+npm run eval:candidates:prepare
+npm run eval:candidates:validate
+npm run eval:labelers:prepare -- --approve-external-private-text-processing
+```
+
+The default v2 portfolio contains 120 cases: 40 representative natural outputs, 25 long/splitting cases, 20 high-risk Discord cases, 20 multi-feature interactions, and 15 controlled boundary/adversarial cases. Natural cases are balanced across OASST1 and WildChat where each bucket permits. The private index retains source family, language, feature intersections, redaction history, portfolio bucket, and opaque source lineage. The current generated set contains 53 WildChat, 52 OASST1, and 15 synthetic cases; 54 exercise multiple features and 41 exceed 2,000 code points.
+
+Validation/challenge assignment hashes the source lineage rather than individual text, keeping conversation siblings and synthetic families together. Reviewer packets hide provenance, portfolio bucket, lineage, split, current converter output, and expected labels. Inputs, packets, index, prompts, policy, and the persisted blinding key are hash-bound.
+
+Two fresh Luna-high lanes use `semantic-labeler-prompt-v2.md` and `semantic-model-rubric-v2.md`. Preparing their packets requires an explicit external-private-text-processing acknowledgement after an authorized privacy/runtime review; regex redaction alone is not approval. Each lane must cover all candidates; shard combination rejects missing, duplicate, contradictory, stale, or schema-invalid records. Exact agreement is named `dual-luna-consensus` because same-model repeat agreement is silver consistency evidence, not independent ground truth.
+
+```bash
+npm run eval:labelers:combine -- --lane a --review path/to/luna-a-001.json --review path/to/luna-a-002.json --output data/work/semantic-eval-labeler-v2/luna-a-combined.private.json
+npm run eval:labelers:combine -- --lane b --review path/to/luna-b-001.json --review path/to/luna-b-002.json --output data/work/semantic-eval-labeler-v2/luna-b-combined.private.json
+npm run eval:freeze -- --review data/work/semantic-eval-labeler-v2/luna-a-combined.private.json --review data/work/semantic-eval-labeler-v2/luna-b-combined.private.json
+```
+
+Ordinary validation agreements may freeze directly. Every disagreement, high-impact case, and challenge case is blocked and routed through blinded, randomized Astra-xhigh escalation. The adjudicator may select one complete supported label, author a corrected policy-grounded semantic label, or quarantine the case. Authored labels remain explicitly Astra-generated silver evidence; privacy uncertainty and policy ambiguity must still be quarantined.
+
+```bash
+npm run eval:adjudication:prepare -- --review data/work/semantic-eval-labeler-v2/luna-a-combined.private.json --review data/work/semantic-eval-labeler-v2/luna-b-combined.private.json
+npm run eval:adjudication:apply -- --review data/work/semantic-eval-labeler-v2/luna-a-combined.private.json --review data/work/semantic-eval-labeler-v2/luna-b-combined.private.json --adjudication path/to/astra-001.json
+```
+
+`npm run eval:score` applies semantic assertions plus unconditional crash, determinism, capacity, fence-balance, mention, unsafe-URL, and Unicode-boundary checks. Reports include Wilson intervals and source/bucket/risk slices. Challenge scoring requires `--split challenge --release-candidate` and omits case-level failures. `npm run eval:report` publishes only aggregate counts and hashes.
+
+The initial v2 run retained 104 of 120 cases and quarantined 16. The current converter passes 66/83 validation labels (79.5%) and 16/21 challenge labels (76.2%). These are deliberately actionable rather than saturated: most failures cluster in long/splitting, boundary, and high-risk behavior. All model labels remain silver evidence; observed Discord, specification, policy, and independently human-reviewed labels retain separate authority. Aggregate evidence is committed in `data/reports/semantic-eval-v2.json`.
 
 ## Operational rules
 

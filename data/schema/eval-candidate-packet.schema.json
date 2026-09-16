@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/eval-candidate-packet-v2.json",
+  "title": "Blinded semantic evaluation candidate v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "candidateId", "sourceToken", "presentationNonce", "policyVersion", "policySha256", "sourceMarkdown", "options"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "candidateId": { "type": "string", "pattern": "^eval-v2-[a-f0-9]{16}$" },
+    "sourceToken": { "$ref": "#/$defs/sha256" },
+    "presentationNonce": { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+    "policyVersion": { "const": "converter-policy-v2" },
+    "policySha256": { "$ref": "#/$defs/sha256" },
+    "sourceMarkdown": { "type": "string", "minLength": 1 },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxMessageLength": { "type": "integer", "minimum": 32 },
+        "neutralizeMentions": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}

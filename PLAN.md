@@ -147,6 +147,9 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 
 ### M3 — empirical validation
 
+- [x] Add a blinded, lineage-split 120-case semantic portfolio spanning OASST1, WildChat, long outputs, feature interactions, and controlled boundary cases.
+- [x] Add complete dual-Luna review gates plus mandatory Astra escalation for disagreements, high-impact cases, and challenge audits.
+- [x] Label, adjudicate, and freeze the first v2 silver set: 104 retained labels, 16 quarantines, and separate validation/challenge baselines.
 - [ ] Capture current Discord web/desktop/mobile observations in a private test server.
 - [ ] Annotate 500–1,000 ambiguous A/B cases.
 - [ ] Report agreement by category.

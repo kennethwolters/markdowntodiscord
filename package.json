@@ -28,12 +28,22 @@
     "loop:adjudication:prepare": "tsx scripts/prepare-loop-adjudication.ts",
     "loop:adjudication:validate": "tsx scripts/validate-loop-adjudication.ts",
     "loop:validate": "tsx scripts/validate-loop-artifacts.ts",
+    "eval:candidates:prepare": "tsx scripts/prepare-eval-candidates.ts",
+    "eval:candidates:validate": "tsx scripts/validate-eval-candidates.ts",
+    "eval:labelers:prepare": "tsx scripts/prepare-eval-labeler-jobs.ts",
+    "eval:labelers:combine": "tsx scripts/combine-eval-labeler-shards.ts",
+    "eval:freeze": "tsx scripts/freeze-eval-set.ts",
+    "eval:adjudication:prepare": "tsx scripts/prepare-eval-adjudication.ts",
+    "eval:adjudication:apply": "tsx scripts/apply-eval-adjudication.ts",
+    "eval:score": "tsx scripts/score-eval-set.ts",
+    "eval:report": "tsx scripts/report-eval-set.ts",
     "data:oasst:fetch": "node scripts/fetch-oasst.mjs",
     "data:oasst:scan": "node scripts/mine-oasst.mjs",
     "data:oasst:sample": "node scripts/sample-oasst-candidates.mjs",
     "data:oasst:extract": "node scripts/extract-oasst-candidates.mjs",
     "data:wildchat:fetch": "node scripts/fetch-wildchat.mjs",
-    "data:wildchat:scan": "uv run scripts/mine_wildchat.py"
+    "data:wildchat:scan": "uv run scripts/mine_wildchat.py",
+    "data:wildchat:sample": "uv run scripts/sample_wildchat_candidates.py"
   },
   "dependencies": {
     "remark-gfm": "4.0.1",

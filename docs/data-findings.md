@@ -41,7 +41,7 @@ The most consequential result is message length: roughly one quarter of assistan
 - 2,006 fenced-code responses
 - 117 table candidates
 - 73 unbalanced-fence candidates
-- 384 unique private review candidates selected across 399 feature references
+- 925 unique private review candidates retained across representative, feature, length, and interaction strata
 
 The private candidate texts remain under ignored `data/work/`. They are not release data and require human PII and quality review.
 
@@ -56,9 +56,13 @@ Priority order supported by both corpora:
 5. Tables, LaTeX, images, and reference links.
 6. Rare Discord-specific collisions and notification safety.
 
+The private semantic v2 pool additionally contains 1,229 unique WildChat candidates. Its frozen 120-case review portfolio is balanced across 53 WildChat, 52 OASST1, and 15 controlled synthetic cases, with explicit quotas for representative outputs, long/splitting behavior, Discord risks, feature interactions, and adversarial boundaries. Blinded review retained 104 silver labels and quarantined 16 cases. The initial converter baseline passes 66/83 validation labels and 16/21 challenge labels.
+
 Exact machine-readable results are in:
 
 - `data/reports/wildchat-feature-report.json`
+- `data/reports/wildchat-candidate-sample-summary.json`
 - `data/reports/oasst1-feature-report.json`
 - `data/reports/oasst1-candidate-sample-summary.json`
 - `data/reports/oasst1-candidate-extraction-summary.json`
+- `data/reports/semantic-eval-v2.json`

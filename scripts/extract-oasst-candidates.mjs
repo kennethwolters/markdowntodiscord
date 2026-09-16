@@ -22,14 +22,14 @@ const index = JSON.parse(indexBytes.toString("utf8"));
 if (index.sourceSha256 !== manifest.sha256) throw new Error("Candidate index and raw source checksums do not match.");
 
 const targets = new Map();
-for (const [feature, items] of Object.entries(index.samples)) {
+for (const [stratum, items] of Object.entries(index.samples)) {
   for (const item of items) {
-    const current = targets.get(item.sourceRow) ?? { ...item, features: [] };
-    current.features.push(feature);
+    const current = targets.get(item.sourceRow) ?? { ...item, samplingStrata: [] };
+    current.samplingStrata.push(stratum);
     targets.set(item.sourceRow, current);
   }
 }
-for (const target of targets.values()) target.features.sort();
+for (const target of targets.values()) target.samplingStrata.sort();
 const expectedUniqueHashes = new Set([...targets.values()].map((target) => target.textSha256));
 
 await mkdir("data/work", { recursive: true });
@@ -52,13 +52,17 @@ for await (const line of lines) {
     if (row.role !== "assistant" || typeof row.text !== "string") throw new Error(`Candidate source row ${lineNumber} is no longer an assistant text row.`);
     const normalized = row.text.replaceAll("\r\n", "\n");
     if (digest(normalized) !== target.textSha256) throw new Error(`Candidate hash mismatch at source row ${lineNumber}.`);
+    if (row.message_id !== target.sourceRecordId || row.message_tree_id !== target.lineageId) throw new Error(`Candidate lineage mismatch at source row ${lineNumber}.`);
     const redacted = redactDirectIdentifiers(normalized);
     state.records[target.textSha256] = {
       textSha256: target.textSha256,
       sourceRow: lineNumber,
+      sourceRecordId: row.message_id,
+      lineageId: row.message_tree_id,
       language: row.lang || "unknown",
       codePoints: Array.from(redacted.text).length,
-      features: target.features,
+      features: detectFeaturesFromStrata(target.samplingStrata),
+      samplingStrata: target.samplingStrata,
       text: redacted.text,
       automaticRedactions: redacted.kinds,
       sourcePiiLabel: numericPiiLabel(row.labels),
@@ -91,7 +95,7 @@ await atomicJson(summaryPath, {
   sourceSha256: manifest.sha256,
   candidateIndexSha256: indexSha256,
   uniqueCandidates: records.length,
-  featureReferences: Object.values(index.samples).reduce((sum, items) => sum + items.length, 0),
+  stratumReferences: Object.values(index.samples).reduce((sum, items) => sum + items.length, 0),
   candidatesWithAutomaticRedactions: records.filter((record) => record.automaticRedactions.length).length,
   automaticRedactionCounts: redactionCounts,
   candidatesWithPositiveSourcePiiLabel: records.filter((record) => (record.sourcePiiLabel ?? 0) > 0).length,
@@ -101,6 +105,7 @@ await atomicJson(summaryPath, {
 });
 console.log(`Complete: extracted ${records.length} unique private candidates to ${outputPath}`);
 
+function detectFeaturesFromStrata(strata) { return strata.filter((value) => value.startsWith("feature:")).map((value) => value.slice("feature:".length)).sort(); }
 function initialState() {
   return { schemaVersion: 1, sourceSha256: manifest.sha256, candidateIndexSha256: indexSha256, processedRows: 0, records: {}, complete: false };
 }
