@@ -34,7 +34,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visib
 }
 .brand { font-weight: 700; letter-spacing: -.025em; text-decoration: none; }
 .brand span { color: var(--muted); font-weight: 500; }
-.header-actions { display: flex; align-items: center; color: var(--muted); font-size: 13px; }
+.header-actions { display: flex; align-items: center; gap: 18px; color: var(--muted); font-size: 13px; }
 .header-actions a { text-underline-offset: 3px; }
 
 main { height: calc(100dvh - 64px); display: flex; flex-direction: column; padding-bottom: 20px; }

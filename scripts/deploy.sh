@@ -44,4 +44,8 @@ done
 curl --fail --silent --show-error "${CANONICAL_URL}/" | grep -Fq "Markdown to Discord"
 curl --fail --silent --show-error "${CANONICAL_URL}/discord-markdown-guide/" | grep -Fq "Discord Markdown Guide"
 
+if ! npm run indexnow:submit; then
+  echo "Warning: deployment succeeded, but IndexNow submission failed." >&2
+fi
+
 echo "Verified ${COMMIT_SHA} at ${CANONICAL_URL}"

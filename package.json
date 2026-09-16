@@ -10,6 +10,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "indexnow:submit": "node scripts/submit-indexnow.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "copy:check": "tsx scripts/check-copy-style.ts",
