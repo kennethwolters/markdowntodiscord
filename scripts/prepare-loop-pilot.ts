@@ -10,6 +10,7 @@ const outputDirectory = "data/work/loop-pilot-v1";
 const packetsPath = `${outputDirectory}/packets.private.jsonl`;
 const indexPath = `${outputDirectory}/index.private.json`;
 const manifestPath = `${outputDirectory}/manifest.json`;
+const shardPaths = [`${outputDirectory}/packets-001.private.jsonl`, `${outputDirectory}/packets-002.private.jsonl`];
 const targetPerInvariantKind = 241;
 
 type BaselineCase = Record<string, any>;
@@ -62,6 +63,11 @@ const index = {
 
 await mkdir(outputDirectory, { recursive: true });
 await atomicWrite(packetsPath, packets.map((packet) => JSON.stringify(packet)).join("\n") + "\n");
+const shardSize = Math.ceil(packets.length / shardPaths.length);
+for (let shard = 0; shard < shardPaths.length; shard++) {
+  const records = packets.slice(shard * shardSize, (shard + 1) * shardSize);
+  await atomicWrite(shardPaths[shard], records.map((packet) => JSON.stringify(packet)).join("\n") + "\n");
+}
 await atomicJson(indexPath, index);
 await atomicJson(manifestPath, {
   schemaVersion: 1,
@@ -76,6 +82,7 @@ await atomicJson(manifestPath, {
   ],
   artifacts: [
     { path: packetsPath, sha256: await sha256File(packetsPath) },
+    ...await Promise.all(shardPaths.map(async (path) => ({ path, sha256: await sha256File(path) }))),
     { path: indexPath, sha256: await sha256File(indexPath) }
   ],
   disclosure: "Public specification, policy, and synthetic mutation records only. Packets omit provenance, split, expected output, and gold labels."

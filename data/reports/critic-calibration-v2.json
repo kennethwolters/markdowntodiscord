@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "calibrationId": "critic-calibration-policy-v2",
+  "status": "complete",
+  "controls": {
+    "total": 36,
+    "positive": 18,
+    "negative": 18,
+    "negativeClasses": [
+      "append-active-mention",
+      "truncate-output",
+      "drop-output",
+      "unbalanced-fence",
+      "over-capacity"
+    ]
+  },
+  "inputs": {
+    "packetsSha256": "6f94995a29b026752178eab73921af1de38131d2cbba9c8a5bc8259df271c144",
+    "answerKeySha256": "a0d49f1eeb1852e8954e3919ac9645041738ee08f12a29adda890f1ee0382f4d",
+    "promptSha256": "77e47c580b0b1640d49e3c15d2495aac54e0fcfe1b8ddcb53ab19802d7d85955",
+    "rubricSha256": "5eba6bca858fbf294cf9964177462bdef5409cc8d6a30d2e9b2bb4ace01b4c24",
+    "policySha256": "c603ae074650f7750f4cfcb1e851b5cc2536bdbbd0df598bd35ba42482eb429b"
+  },
+  "critics": [
+    {
+      "criticId": "luna",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-luna",
+      "outputSha256": "8a827c21470b4f029c66a284a36d3b3e20206e6406590932036a1384e81205e0",
+      "correct": 36,
+      "incorrect": 0,
+      "abstained": 0,
+      "accuracy": 1.0,
+      "positiveControlRecall": 1.0,
+      "negativeControlRecall": 1.0
+    },
+    {
+      "criticId": "sol",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-sol",
+      "outputSha256": "dc25e3a20e6da071d1f17952c033329b7f6300a5d6c8abbbd706ed457e4cd9a7",
+      "correct": 36,
+      "incorrect": 0,
+      "abstained": 0,
+      "accuracy": 1.0,
+      "positiveControlRecall": 1.0,
+      "negativeControlRecall": 1.0
+    }
+  ],
+  "pairwiseVerdictAgreement": {
+    "agreements": 36,
+    "total": 36,
+    "rate": 1.0
+  },
+  "interpretation": "Both critics passed the policy-v2 calibration gate. Control accuracy measures critic calibration only; it is not converter quality, and agent judgments are not promoted to gold."
+}

@@ -3,10 +3,10 @@
   "$id": "https://markdowntodiscord.com/schema/loop-calibration-report-v1.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "calibrationId", "status", "controls", "inputs", "critics", "pairwiseVerdictAgreement", "knownBias", "interpretation"],
+  "required": ["schemaVersion", "calibrationId", "status", "controls", "inputs", "critics", "pairwiseVerdictAgreement", "interpretation"],
   "properties": {
     "schemaVersion": { "const": 1 },
-    "calibrationId": { "const": "critic-calibration-v1" },
+    "calibrationId": { "type": "string", "minLength": 1 },
     "status": { "const": "complete" },
     "controls": {
       "type": "object", "additionalProperties": false, "required": ["total", "positive", "negative", "negativeClasses"],

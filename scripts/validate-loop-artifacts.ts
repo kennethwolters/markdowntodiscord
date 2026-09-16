@@ -84,15 +84,16 @@ const report = JSON.parse(await readFile(reportPath, "utf8"));
 validate(validators.get(schemaPaths[5])!, report, reportPath);
 assertEqual(manifest.runId, report.runId, "manifest/report run ID");
 assertEqual(JSON.stringify(report), JSON.stringify(expectedReport(cases)), "recomputed baseline report");
-const calibrationReportPath = "data/reports/critic-calibration-v1.json";
-const calibrationReport = JSON.parse(await readFile(calibrationReportPath, "utf8"));
-validate(validators.get(schemaPaths[11])!, calibrationReport, calibrationReportPath);
-assertEqual(calibrationReport.controls.positive + calibrationReport.controls.negative, calibrationReport.controls.total, "calibration control total");
-for (const critic of calibrationReport.critics) {
-  assertEqual(critic.correct + critic.incorrect + critic.abstained, calibrationReport.controls.total, `${critic.criticId} decision total`);
-  assertClose(critic.accuracy, critic.correct / calibrationReport.controls.total, `${critic.criticId} accuracy`);
+for (const calibrationReportPath of ["data/reports/critic-calibration-v1.json", "data/reports/critic-calibration-v2.json"]) {
+  const calibrationReport = JSON.parse(await readFile(calibrationReportPath, "utf8"));
+  validate(validators.get(schemaPaths[11])!, calibrationReport, calibrationReportPath);
+  assertEqual(calibrationReport.controls.positive + calibrationReport.controls.negative, calibrationReport.controls.total, `${calibrationReport.calibrationId} control total`);
+  for (const critic of calibrationReport.critics) {
+    assertEqual(critic.correct + critic.incorrect + critic.abstained, calibrationReport.controls.total, `${calibrationReport.calibrationId}/${critic.criticId} decision total`);
+    assertClose(critic.accuracy, critic.correct / calibrationReport.controls.total, `${calibrationReport.calibrationId}/${critic.criticId} accuracy`);
+  }
+  assertClose(calibrationReport.pairwiseVerdictAgreement.rate, calibrationReport.pairwiseVerdictAgreement.agreements / calibrationReport.pairwiseVerdictAgreement.total, `${calibrationReport.calibrationId} pairwise agreement rate`);
 }
-assertClose(calibrationReport.pairwiseVerdictAgreement.rate, calibrationReport.pairwiseVerdictAgreement.agreements / calibrationReport.pairwiseVerdictAgreement.total, "pairwise agreement rate");
 console.log(`Validated ${schemaPaths.length} loop schemas, bound manifest hashes, recomputed reports, and ${records} baseline cases.`);
 
 function expectedReport(cases: Array<Record<string, any>>): Record<string, unknown> {

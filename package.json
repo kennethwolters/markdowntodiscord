@@ -23,6 +23,8 @@
     "loop:calibration:validate": "tsx scripts/validate-loop-calibration.ts",
     "loop:calibration:score": "tsx scripts/score-loop-calibration.ts",
     "loop:pilot:validate": "tsx scripts/validate-loop-pilot.ts",
+    "loop:pilot:combine": "tsx scripts/combine-loop-critic-shards.ts",
+    "loop:pilot:score": "tsx scripts/score-loop-pilot.ts",
     "loop:validate": "tsx scripts/validate-loop-artifacts.ts",
     "data:oasst:fetch": "node scripts/fetch-oasst.mjs",
     "data:oasst:scan": "node scripts/mine-oasst.mjs",

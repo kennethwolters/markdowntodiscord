@@ -91,6 +91,8 @@ Prepare the first blinded critic pilot locally:
 ```bash
 npm run loop:pilot:prepare
 npm run loop:pilot:validate
+npm run loop:pilot:combine -- --output data/work/loop-pilot-v1/critic.json --shard path/to/part-001.json --shard path/to/part-002.json
+npm run loop:pilot:score -- --critic luna:provider:model=data/work/loop-pilot-v1/critic-luna.json --critic sol:provider:model=data/work/loop-pilot-v1/critic-sol.json
 npm run loop:calibration:prepare
 npm run loop:calibration:validate
 npm run loop:calibration:score -- --critic first=path/to/first.json --critic second=path/to/second.json
@@ -98,7 +100,9 @@ npm run loop:calibration:score -- --critic first=path/to/first.json --critic sec
 
 This deterministically selects all 18 public policy-gold cases and 482 train-only invariant cases, then writes 500 randomized packets under ignored `data/work/loop-pilot-v1/`. Critic packets contain source, converter output, warnings, and hashes of the versioned rubric and policy. They omit provenance, split identity, expected output, label class, and gold decisions. The separate private index is unavailable to critics and is used only for post-judgment calibration.
 
-Critic calibration uses 18 correct policy outputs and 18 deterministically corrupted negative controls covering omissions, active-mention invention, unbalanced fences, and over-capacity output. Positive and negative identities live only in the ignored answer key. Critics receive explicit conversion options but not the answer. Outputs must satisfy `loop-critic-output.schema.json` before scoring; protocol-invalid outputs are retained as failed calibration attempts rather than repaired into evidence. The first valid two-model calibration scored 35/36 for Luna and 36/36 for Sol, with 35/36 verdict agreement. Luna's sole false failure rejected intentionally active mentions under `neutralizeMentions=false`; those cases therefore require Sol or adjudication. Aggregate evidence is committed in `data/reports/critic-calibration-v1.json`.
+The 500-case pilot packet file is also emitted as two ordered 250-case shards so each critic can work within a bounded context. Shard combination rejects duplicate packet IDs, and scoring rejects missing cases, unknown cases, invalid citations, hash mismatches, and schema-invalid output. Pilot judgments are normalized to durable judgment records, then routed as no-review, disagreement, unanimous failure, or abstention. Invariant-only judgments remain triage-only.
+
+Critic calibration uses 18 correct policy outputs and 18 deterministically corrupted negative controls covering omissions, active-mention invention, unbalanced fences, and over-capacity output. Positive and negative identities live only in the ignored answer key. Critics receive explicit conversion options but not the answer. Outputs must satisfy `loop-critic-output.schema.json` before scoring; protocol-invalid outputs are retained as failed calibration attempts rather than repaired into evidence. The first valid two-model calibration scored 35/36 for Luna and 36/36 for Sol, with 35/36 verdict agreement. Luna's sole false failure rejected intentionally active mentions under `neutralizeMentions=false`. Policy v2 made that override explicit; the fresh policy-v2 calibration then scored 36/36 for both critics with 36/36 agreement. Aggregate evidence is committed in `data/reports/critic-calibration-v1.json` and `data/reports/critic-calibration-v2.json`.
 
 ## Operational rules
 
