@@ -6,11 +6,14 @@
     <title>Markdown to Discord Converter</title>
     <meta name="description" content="Convert Markdown into Discord-ready messages in your browser. Tables, task lists, links, code blocks, mentions, and 2,000-character splitting are handled locally." />
     <meta name="robots" content="index,follow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href="https://markdowntodiscord.com/" />
     <meta property="og:title" content="Markdown to Discord Converter" />
     <meta property="og:description" content="Paste Markdown and copy Discord-ready messages. Conversion stays in your browser." />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Markdown to Discord" />
     <meta property="og:url" content="https://markdowntodiscord.com/" />
+    <meta name="twitter:card" content="summary" />
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebApplication","name":"Markdown to Discord","url":"https://markdowntodiscord.com/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A local browser-based Markdown to Discord converter."}
     </script>
@@ -37,7 +40,7 @@
           <div class="panel-heading">
             <h2>Markdown</h2>
             <div class="tools">
-              <input id="file-input" class="sr-only" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" />
+              <input id="file-input" class="sr-only" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" aria-label="Open a Markdown file" />
               <button class="icon-button" id="open-file" type="button" aria-label="Open a Markdown file" title="Open .md file">↑</button>
               <button class="icon-button" id="clear" type="button" aria-label="Clear Markdown" title="Clear">×</button>
             </div>

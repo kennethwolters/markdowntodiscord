@@ -2,6 +2,11 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "decode-named-character-reference": resolve(import.meta.dirname, "node_modules/decode-named-character-reference/index.js")
+    }
+  },
   build: {
     rollupOptions: {
       input: {

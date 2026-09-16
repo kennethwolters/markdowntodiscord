@@ -1,5 +1,5 @@
 import "./style.css";
-import { convertMarkdown, type ConversionWarning } from "./convert.js";
+import type { ConversionResult, ConversionWarning, ConvertOptions } from "./convert.js";
 
 const source = requiredElement<HTMLTextAreaElement>("source");
 const outputs = requiredElement<HTMLDivElement>("outputs");
@@ -18,15 +18,21 @@ const storage = { source: "markdown-to-discord:tab-draft", neutralize: "markdown
 const maxFileBytes = 2 * 1024 * 1024;
 
 const warningHelp: Record<ConversionWarning["code"], { title: string; action: string; href: string }> = {
-  "lossy-table": { title: "Table converted", action: "Check column alignment before posting.", href: "/discord-markdown-guide/#conversion" },
+  "lossy-table": { title: "Table converted", action: "Check column alignment before posting.", href: "/discord-markdown-guide/#unsupported" },
   "math-degraded": { title: "Math preserved as text", action: "Discord does not render LaTeX; verify the readable source.", href: "/discord-markdown-guide/#unsupported" },
   "html-flattened": { title: "HTML flattened", action: "Check that the readable text retains the intended meaning.", href: "/discord-markdown-guide/#unsupported" },
-  "unresolved-reference": { title: "Reference link unresolved", action: "Add the missing link definition or replace it with an inline link.", href: "/discord-markdown-guide/#conversion" },
-  "unsafe-url": { title: "Unsafe link disabled", action: "Verify the destination before replacing it with an https URL.", href: "/discord-markdown-guide/#conversion" },
+  "unresolved-reference": { title: "Reference link unresolved", action: "Add the missing link definition or replace it with an inline link.", href: "/discord-markdown-guide/#unsupported" },
+  "unsafe-url": { title: "Unsafe link disabled", action: "Verify the destination before replacing it with an https URL.", href: "/discord-markdown-guide/#unsupported" },
   "mentions-neutralized": { title: "Mentions made safe", action: "They will display without notifying people or roles.", href: "/discord-markdown-guide/#mentions" },
   "message-split": { title: "Output split for Discord", action: "Copy and send each numbered message in order.", href: "/discord-markdown-guide/#limits" }
 };
 
+type ConversionResponse = { id: number; result: ConversionResult };
+
+let converterWorker: Worker | undefined;
+let nextConversionId = 0;
+let renderVersion = 0;
+const pendingConversions = new Map<number, { resolve: (result: ConversionResult) => void; reject: (error: Error) => void }>();
 let currentMessages: string[] = [];
 let nextCopyIndex = 0;
 let timer = 0;
@@ -40,7 +46,7 @@ source.addEventListener("input", () => { if (clearedDraft !== undefined) { clear
 source.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !copyNext.disabled) { event.preventDefault(); copyNext.click(); }
 });
-neutralize.addEventListener("change", () => { persist(); render(); });
+neutralize.addEventListener("change", () => { persist(); void render(); });
 requiredElement("open-file").addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", async () => { const file = fileInput.files?.[0]; if (file) await loadFile(file); fileInput.value = ""; });
 for (const eventName of ["dragenter", "dragover"]) inputPanel.addEventListener(eventName, (event) => { event.preventDefault(); inputPanel.classList.add("dragging"); });
@@ -52,7 +58,7 @@ clearButton.addEventListener("click", () => {
   clearedCopyProgress = [...copiedIndices];
   source.value = "";
   removeStoredDraft();
-  render();
+  void render();
   showUndo();
   source.focus();
 });
@@ -64,8 +70,11 @@ requiredElement("undo-clear-button").addEventListener("click", () => {
   clearedCopyProgress = [];
   hideUndo();
   persist();
-  render();
-  for (const index of progress) if (index < currentMessages.length) markCopied(index);
+  const restoredDraft = source.value;
+  void render().then(() => {
+    if (source.value !== restoredDraft) return;
+    for (const index of progress) if (index < currentMessages.length) markCopied(index);
+  });
   source.focus();
 });
 copyNext.addEventListener("click", async () => {
@@ -83,14 +92,15 @@ copyNext.addEventListener("click", async () => {
   }, 1_400);
 });
 
-render();
+void render();
 
 function scheduleRender(): void {
   window.clearTimeout(timer);
-  timer = window.setTimeout(() => { persist(); render(); }, 80);
+  timer = window.setTimeout(() => { persist(); void render(); }, 80);
 }
 
-function render(): void {
+async function render(): Promise<void> {
+  const version = ++renderVersion;
   const value = source.value;
   copiedIndices.clear();
   sourceCount.textContent = Array.from(value).length.toLocaleString();
@@ -109,7 +119,17 @@ function render(): void {
     return;
   }
 
-  const result = convertMarkdown(value, { neutralizeMentions: neutralize.checked });
+  outputs.append(emptyState("↓"));
+  status.textContent = "Converting";
+  let result: ConversionResult;
+  try {
+    result = await convertInWorker(value, { neutralizeMentions: neutralize.checked });
+  } catch {
+    if (version === renderVersion) showUiError("Conversion failed. Reload the page and try again.");
+    return;
+  }
+  if (version !== renderVersion) return;
+  outputs.replaceChildren();
   currentMessages = result.messages.filter((message) => message.length > 0);
   nextCopyIndex = 0;
   restoreCopyProgress();
@@ -196,6 +216,30 @@ function outputCard(message: string, index: number, total: number): HTMLElement 
   return card;
 }
 
+function convertInWorker(value: string, options: ConvertOptions): Promise<ConversionResult> {
+  if (!converterWorker) {
+    converterWorker = new Worker(new URL("./converter.worker.ts", import.meta.url), { type: "module" });
+    converterWorker.addEventListener("message", (event: MessageEvent<ConversionResponse>) => {
+      const pending = pendingConversions.get(event.data.id);
+      if (!pending) return;
+      pendingConversions.delete(event.data.id);
+      pending.resolve(event.data.result);
+    });
+    converterWorker.addEventListener("error", (event) => {
+      const error = new Error(event.message || "Converter worker failed");
+      for (const pending of pendingConversions.values()) pending.reject(error);
+      pendingConversions.clear();
+      converterWorker?.terminate();
+      converterWorker = undefined;
+    });
+  }
+  const id = ++nextConversionId;
+  return new Promise((resolve, reject) => {
+    pendingConversions.set(id, { resolve, reject });
+    converterWorker!.postMessage({ id, source: value, options });
+  });
+}
+
 async function copyText(value: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(value);
@@ -237,7 +281,7 @@ async function loadFile(file: File): Promise<void> {
     clearedDraft = undefined;
     hideUndo();
     persist();
-    render();
+    await render();
     source.focus();
     status.textContent = `${file.name} loaded locally.`;
   } catch { showUiError("The file could not be read. It was not uploaded."); }

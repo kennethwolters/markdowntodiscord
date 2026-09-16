@@ -10,9 +10,11 @@
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 /version.json
   Cache-Control: no-store
 
 /discord-markdown-guide/index.html
   Cache-Control: public, max-age=0, must-revalidate
+  Cloudflare-CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400
