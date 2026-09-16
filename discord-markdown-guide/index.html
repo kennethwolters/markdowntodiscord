@@ -27,7 +27,6 @@
           <a href="#unsupported">Unsupported syntax</a>
           <a href="#limits">Message limits</a>
           <a href="#mentions">Mentions</a>
-          <a href="#conversion">Conversion</a>
         </nav>
       </aside>
 
@@ -35,12 +34,12 @@
         <header class="article-header">
           <p class="kicker">Reference</p>
           <h1>Discord Markdown</h1>
-          <p>What Discord formats, what it ignores, and what needs conversion before you paste.</p>
+          <p>Syntax, limits, and conversion rules.</p>
         </header>
 
         <section id="supported">
           <h2>Supported formatting</h2>
-          <p>Discord supports emphasis, headings, quotes, lists, code, spoilers, and masked links. Its syntax is similar to Markdown, but it does not follow CommonMark exactly.</p>
+          <p>Discord supports emphasis, headings, quotes, lists, code, spoilers, and masked links.</p>
           <div class="table-wrap">
             <table>
               <caption class="sr-only">Discord formatting syntax</caption>
@@ -63,7 +62,6 @@
 
         <section id="unsupported">
           <h2>Unsupported syntax</h2>
-          <p>These common documentation features have no native Discord equivalent.</p>
           <dl class="definition-list">
             <div><dt>Tables</dt><dd>Convert them to an aligned code block or short labeled rows.</dd></div>
             <div><dt>Task checkboxes</dt><dd>Use <code>☑</code> and <code>☐</code>. Discord does not create interactive boxes.</dd></div>
@@ -76,26 +74,12 @@
 
         <section id="limits">
           <h2>Message limits</h2>
-          <p>Ordinary Discord messages are limited to 2,000 characters. Splitting at an arbitrary character can break links, emphasis, lists, Unicode sequences, or fenced code.</p>
-          <p>Split at paragraph and list boundaries where possible. If a code block crosses a boundary, close the fence in the first message and reopen it with the same language in the next.</p>
-          <aside class="data-note"><strong>24.92%</strong><p>of 1,960,074 assistant turns measured in <a href="https://huggingface.co/datasets/allenai/WildChat-1M" rel="external">WildChat-1M</a> exceeded 2,000 code points. This is a corpus measurement, not a Discord failure rate.</p></aside>
+          <p>Discord messages are limited to 2,000 characters. Split long text at paragraph or list boundaries. Close and reopen fenced code blocks across messages.</p>
         </section>
 
         <section id="mentions">
           <h2>Mentions</h2>
-          <p>Text containing <code>@everyone</code>, <code>@here</code>, or structured user and role mentions can notify people when pasted.</p>
-          <p>Bots should restrict Discord's <code>allowed_mentions</code> payload. Clipboard tools cannot set that option, so active mention tokens should be neutralized before copying.</p>
-        </section>
-
-        <section id="conversion">
-          <h2>Conversion</h2>
-          <ol>
-            <li>Parse CommonMark and only the GFM extensions you support.</li>
-            <li>Transform the syntax tree instead of replacing text with broad regular expressions.</li>
-            <li>Resolve unsupported structures with consistent rules.</li>
-            <li>Neutralize active mentions outside code.</li>
-            <li>Split at structural boundaries and validate every message.</li>
-          </ol>
+          <p><code>@everyone</code>, <code>@here</code>, user mentions, and role mentions can send notifications. Neutralize them before pasting.</p>
           <p class="back-link"><a href="/">Open the converter <span aria-hidden="true">→</span></a></p>
         </section>
       </article>

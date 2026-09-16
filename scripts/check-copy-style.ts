@@ -9,7 +9,8 @@ const files = [
 
 const rules: Array<{ label: string; pattern: RegExp }> = [
   { label: "em or en dash", pattern: /[—–]/g },
-  { label: "AI-marketing phrase", pattern: /\b(?:delve|seamless(?:ly)?|effortless(?:ly)?|elevate|unlock|revolutioni[sz]e|game[ -]changer|in today['’]s|whether you['’]re|designed to|powerful and|robust and)\b/gi }
+  { label: "AI-marketing phrase", pattern: /\b(?:delve|seamless(?:ly)?|effortless(?:ly)?|elevate|unlock|revolutioni[sz]e|game[ -]changer|in today['’]s|whether you['’]re|designed to|powerful and|robust and)\b/gi },
+  { label: "contrast-filler construction", pattern: /,\s+but\b|\bthis is\b[^.!?]{0,120}\bnot\b/gi }
 ];
 
 const failures: string[] = [];
