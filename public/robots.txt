@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://markdown-to-discord.pages.dev/sitemap.xml
+Sitemap: https://markdowntodiscord.com/sitemap.xml

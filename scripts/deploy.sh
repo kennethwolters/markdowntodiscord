@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_NAME="${CLOUDFLARE_PAGES_PROJECT:-markdown-to-discord}"
-CANONICAL_URL="${CANONICAL_URL:-https://markdown-to-discord.pages.dev}"
+CANONICAL_URL="${CANONICAL_URL:-https://markdowntodiscord.com}"
 BRANCH="${CLOUDFLARE_PAGES_BRANCH:-main}"
 WRANGLER_VERSION="${WRANGLER_VERSION:-4.132.0}"
 

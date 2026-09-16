@@ -2,7 +2,7 @@
 
 A browser-first Markdown-to-Discord converter and evidence-backed compatibility benchmark.
 
-Live deployment: [markdown-to-discord.pages.dev](https://markdown-to-discord.pages.dev/)
+Live deployment: [markdowntodiscord.com](https://markdowntodiscord.com/)
 
 The conversion core is under `src/`. The research and delivery plan is in [`PLAN.md`](./PLAN.md); the closed-loop evaluation and optimization design is in [`docs/agentic-optimization.md`](./docs/agentic-optimization.md).
 
