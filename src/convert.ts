@@ -56,6 +56,7 @@ export function convertMarkdown(source: string, options: ConvertOptions = {}): C
     warnings: [],
     neutralizeMentions: options.neutralizeMentions ?? true
   };
+  warnUnresolvedReferences(source, definitions, context);
 
   const blocks = (tree.children ?? [])
     .filter((node) => node.type !== "definition")
@@ -71,7 +72,7 @@ export function convertMarkdown(source: string, options: ConvertOptions = {}): C
 
 function collectDefinitions(node: Node, definitions: Map<string, Definition>): void {
   if (node.type === "definition" && node.identifier && node.url !== undefined) {
-    const identifier = node.identifier.toLowerCase();
+    const identifier = normalizeReferenceIdentifier(node.identifier);
     if (!definitions.has(identifier)) definitions.set(identifier, { url: node.url, title: node.title });
   }
   for (const child of node.children ?? []) collectDefinitions(child, definitions);
@@ -135,8 +136,27 @@ function renderInline(node: Node, context: Context): string {
   }
 }
 
+function warnUnresolvedReferences(source: string, definitions: Map<string, Definition>, context: Context): void {
+  const withoutCode = source
+    .replaceAll(/^( {0,3})(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1\2\s*$/gm, "")
+    .replaceAll(/(`+)(?:[^`]|`(?!\1))*\1/g, "");
+  const warned = new Set<string>();
+  for (const match of withoutCode.matchAll(/!?\[([^\]\n]+)\]\[([^\]\n]*)\]/g)) {
+    if (match.index && withoutCode[match.index - 1] === "\\") continue;
+    const identifier = normalizeReferenceIdentifier(match[2] || match[1]);
+    if (!definitions.has(identifier) && !warned.has(identifier)) {
+      warned.add(identifier);
+      context.warnings.push({ code: "unresolved-reference", message: `Reference '${match[2] || match[1]}' could not be resolved.` });
+    }
+  }
+}
+
+function normalizeReferenceIdentifier(value: string): string {
+  return value.trim().replaceAll(/\s+/g, " ").toLowerCase();
+}
+
 function renderReference(node: Node, context: Context, image: boolean): string {
-  const definition = context.definitions.get((node.identifier ?? "").toLowerCase());
+  const definition = context.definitions.get(normalizeReferenceIdentifier(node.identifier ?? ""));
   const label = image ? `Image: ${renderText(node.alt || node.identifier || "image", context)}` : renderInlineChildren(node, context);
   if (definition) return renderLink(label, definition.url, context);
   context.warnings.push({ code: "unresolved-reference", message: `Reference '${node.identifier ?? ""}' could not be resolved.` });
@@ -271,6 +291,11 @@ export function splitDiscordMessages(value: string, max = 2_000): string[] {
     for (let pieceIndex = 0; pieceIndex < pieces.length; pieceIndex++) {
       const separator = blockIndex > 0 && pieceIndex === 0 ? "\n\n" : "";
       const piece = pieces[pieceIndex];
+      if (pieceIndex > 0 && /^`{3,}[^\n]*\n/.test(piece) && current) {
+        messages.push(current);
+        current = piece;
+        continue;
+      }
       const candidate = current ? `${current}${separator}${piece}` : `${separator}${piece}`;
       if (codePointLength(candidate) <= max) current = candidate;
       else {
@@ -347,8 +372,14 @@ function splitFencedBody(body: string, language: string, max: number): string[] 
       } else high = middle - 1;
     }
     if (best < 0) throw new Error("Unable to fit code content inside the configured message limit");
-    parts.push(fencedCode(points.slice(start, best).join(""), safeLanguage));
-    start = best;
+    let end = best;
+    if (best < points.length) {
+      for (let index = best; index > start; index--) {
+        if (points[index - 1] === "\n") { end = index; break; }
+      }
+    }
+    parts.push(fencedCode(points.slice(start, end).join(""), safeLanguage));
+    start = end;
   }
   return parts;
 }

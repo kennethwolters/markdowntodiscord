@@ -73,6 +73,12 @@ describe("convertMarkdown", () => {
       .toBe("Read [the docs](https://example.com/docs).");
   });
 
+  it("warns about unresolved full and collapsed references outside code", () => {
+    const result = convertMarkdown("Read [known][k], [missing][x], and [other][]. `Ignore [code][z]`.\n\n[k]: https://example.com\n\n```md\n[also][no]\n```");
+    expect(result.warnings.filter((warning) => warning.code === "unresolved-reference").map((warning) => warning.message))
+      .toEqual(["Reference 'x' could not be resolved.", "Reference 'other' could not be resolved."]);
+  });
+
   it("uses the first duplicate reference definition and accepts an empty destination", () => {
     expect(convertMarkdown("[foo]\n\n[foo]: first\n[foo]: second").messages[0]).toBe("foo (first)");
     expect(convertMarkdown("[foo]: <>\n\n[foo]").messages[0]).toBe("foo ()");
@@ -133,6 +139,15 @@ describe("splitDiscordMessages", () => {
     expect(messages.length).toBeGreaterThan(1);
     expect(messages.every((message) => message.startsWith("```js\n") && message.endsWith("\n```"))).toBe(true);
     expect(messages.every((message) => Array.from(message).length <= 40)).toBe(true);
+  });
+
+  it("prefers line boundaries when splitting fenced code", () => {
+    const body = Array.from({ length: 12 }, (_, index) => `const value${index} = ${index};`).join("\n");
+    const messages = splitDiscordMessages(`\`\`\`js\n${body}\n\`\`\``, 64);
+    expect(messages.length).toBeGreaterThan(1);
+    expect(messages.every((message) => !/const value\d+ =?\n```$/.test(message))).toBe(true);
+    expect(messages.map((message) => message.slice(6, -4)).join(""))
+      .toBe(body);
   });
 
   it("keeps blank lines inside fenced code while splitting", () => {

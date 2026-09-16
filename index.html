@@ -14,6 +14,9 @@
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebApplication","name":"Markdown to Discord","url":"https://markdown-to-discord.pages.dev/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A browser-based Markdown to Discord converter."}
     </script>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Discord support Markdown?","acceptedAnswer":{"@type":"Answer","text":"Discord supports a subset of Markdown, but not GitHub tables, task lists, HTML, or LaTeX. The converter turns unsupported structures into readable Discord text."}},{"@type":"Question","name":"What happens when a Discord message exceeds 2,000 characters?","acceptedAnswer":{"@type":"Answer","text":"The converter splits the result into numbered messages while preserving Unicode characters and balanced code fences."}},{"@type":"Question","name":"Is pasted Markdown uploaded?","acceptedAnswer":{"@type":"Answer","text":"No. Conversion and optional draft storage happen locally in the browser."}}]}
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -38,13 +41,23 @@
               <span class="step">01</span>
               <h2>Markdown</h2>
             </div>
-            <button class="text-button" id="load-example" type="button">Load example</button>
+            <div class="example-controls">
+              <label class="sr-only" for="example-picker">Choose an example</label>
+              <select id="example-picker" aria-label="Example type">
+                <option value="mixed">Mixed Markdown</option>
+                <option value="table">Table and tasks</option>
+                <option value="mentions">Mentions and links</option>
+                <option value="long-code">Long code block</option>
+              </select>
+              <button class="text-button" id="load-example" type="button">Load</button>
+            </div>
           </div>
           <label class="sr-only" for="source">Markdown to convert</label>
           <textarea id="source" spellcheck="false" placeholder="# Paste your Markdown here…"></textarea>
           <div class="panel-footer">
             <span id="source-count">0 characters</span>
-            <button class="text-button danger" id="clear" type="button">Clear</button>
+            <span>Saved locally in this browser</span>
+            <button class="text-button danger" id="clear" type="button">Clear draft</button>
           </div>
         </div>
 
@@ -56,8 +69,9 @@
             </div>
             <button class="primary-button" id="copy-all" type="button" disabled>Copy output</button>
           </div>
-          <div id="warnings" class="warnings" aria-live="polite"></div>
-          <div id="outputs" class="outputs" aria-live="polite">
+          <div id="conversion-status" class="sr-only" role="status" aria-live="polite"></div>
+          <div id="warnings" class="warnings"></div>
+          <div id="outputs" class="outputs">
             <div class="empty-state">Your converted messages will appear here.</div>
           </div>
           <div class="panel-footer output-footer">
@@ -80,6 +94,17 @@
           <article><strong>Code stays fenced</strong><p>Long code blocks close and reopen safely across Discord messages.</p></article>
           <article><strong>Mentions stay quiet</strong><p>Potentially active user, role, @everyone, and @here mentions are neutralized by default.</p></article>
           <article><strong>Nothing is uploaded</strong><p>Your text is converted locally in this browser. There is no document-processing backend.</p></article>
+        </div>
+      </section>
+
+      <section class="faq" aria-labelledby="faq-title">
+        <p class="eyebrow">Common questions</p>
+        <h2 id="faq-title">Markdown to Discord, without surprises.</h2>
+        <div class="faq-grid">
+          <article><h3>Does Discord support Markdown?</h3><p>Discord supports a useful subset, but not GitHub tables, task lists, HTML, or LaTeX. This converter turns unsupported structures into readable Discord text.</p></article>
+          <article><h3>What happens above 2,000 characters?</h3><p>The result is split into numbered messages while keeping Unicode characters and code fences intact. Copy and send each message in order.</p></article>
+          <article><h3>Can this trigger mentions?</h3><p>Potentially active user, role, <code>@everyone</code>, and <code>@here</code> mentions are neutralized by default. You can deliberately turn that protection off.</p></article>
+          <article><h3>Is pasted Markdown uploaded?</h3><p>No. Conversion and optional draft storage happen locally in your browser. Clearing the draft removes the locally saved text.</p></article>
         </div>
       </section>
     </main>

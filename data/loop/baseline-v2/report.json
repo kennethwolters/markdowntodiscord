@@ -1,33 +1,34 @@
 {
   "schemaVersion": 1,
   "runId": "public-baseline-v2",
-  "cases": 1177,
+  "cases": 1178,
   "splitCounts": {
     "train": 808,
-    "validation": 248,
+    "validation": 249,
     "public-test": 121
   },
   "kindCounts": {
     "commonmark": 652,
     "mutant": 500,
-    "policy": 25
+    "policy": 26
   },
   "gold": {
-    "total": 25,
-    "passed": 25,
+    "total": 26,
+    "passed": 26,
     "failed": 0
   },
   "invariants": {
     "failedCases": 0,
-    "deterministic": 1177,
-    "withinCapacity": 1177,
-    "balancedFences": 1177,
-    "activeMentionsAbsent": 1176,
-    "mentionPolicyConformant": 1177
+    "deterministic": 1178,
+    "withinCapacity": 1178,
+    "balancedFences": 1178,
+    "activeMentionsAbsent": 1177,
+    "mentionPolicyConformant": 1178
   },
   "warningCounts": {
     "unsafe-url": 160,
     "html-flattened": 127,
+    "unresolved-reference": 6,
     "lossy-table": 1,
     "math-degraded": 1,
     "mentions-neutralized": 1

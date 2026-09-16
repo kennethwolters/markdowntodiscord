@@ -5,8 +5,8 @@
   "status": "complete",
   "converterIdentity": {
     "repositoryCommit": null,
-    "sourceSha256": "59f3a75df19650b36ca07e09ad1b011ac27ebf94f4935804c85af0b0ad353d95",
-    "policyFixtureSha256": "dc6185c7ab1da00b8e0d5c8724b75c66cbfb5b6bc4fa5adaf9e4acd0f1755022"
+    "sourceSha256": "d55e9d422c4f939de597a9381d889254c65f940e4695b976773246baafb0f578",
+    "policyFixtureSha256": "13bfff561ace33858e7c31943fb05a107f5f1a46356a34b5dd932f96d6b09526"
   },
   "runtime": {
     "node": "v22.23.2",
@@ -20,8 +20,8 @@
   "sources": [
     {
       "path": "data/fixtures/discord-policy-v1.jsonl",
-      "sha256": "dc6185c7ab1da00b8e0d5c8724b75c66cbfb5b6bc4fa5adaf9e4acd0f1755022",
-      "records": 25
+      "sha256": "13bfff561ace33858e7c31943fb05a107f5f1a46356a34b5dd932f96d6b09526",
+      "records": 26
     },
     {
       "path": "data/spec/commonmark-0.31.2.jsonl",
@@ -44,11 +44,11 @@
   "artifacts": [
     {
       "path": "data/loop/baseline-v2/cases.jsonl",
-      "sha256": "285b33fb4c47664f12dc88fd292b84745bb854ac3d88f66da60e4ee6793bb616"
+      "sha256": "73e3f6d21d3bc9c4a12a8a21560528659a7e8d9d6328d5de3ec6d7efa311780c"
     },
     {
       "path": "data/loop/baseline-v2/report.json",
-      "sha256": "607a8769fb6e066b46169c7eae6ea10cf5295569b69ecc4f7b9b3b6d3d547bef"
+      "sha256": "fc4d424b66608b3607ff75789934d7b8ad0239307bc93c1c131518873772fd16"
     }
   ],
   "notes": "Public deterministic substrate only. Policy fixtures are gold; CommonMark and mutant records provide invariants, not expected Discord output. Converter identity hashes src/convert.ts and package-lock.json."

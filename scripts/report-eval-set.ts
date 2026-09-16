@@ -11,6 +11,7 @@ const indexPath = "data/work/semantic-eval-candidates-v2/index.private.json";
 const quarantinePath = "data/work/semantic-eval-consensus-v2/quarantine.private.jsonl";
 const outputPath = "data/reports/semantic-eval-v2.json";
 const [candidate, final, validation, challenge, index] = await Promise.all([candidateManifestPath, finalReportPath, validationPath, challengePath, indexPath].map(readJson));
+if (validation.converterSha256 !== challenge.converterSha256) throw new Error("Validation and challenge scores use different converter versions; create and score a fresh challenge set before publishing a combined report");
 const quarantinedIds = new Set((await readJsonl(quarantinePath)).map((item) => item.candidateId));
 const quarantinedMappings = index.mappings.filter((item: Record<string, any>) => quarantinedIds.has(item.candidateId));
 const report = {

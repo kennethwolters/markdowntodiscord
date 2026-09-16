@@ -153,12 +153,12 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 - [ ] Capture current Discord web/desktop/mobile observations in a private test server.
 - [ ] Annotate 500–1,000 ambiguous A/B cases.
 - [ ] Report agreement by category.
-- [ ] Freeze public test and private challenge splits.
+- [ ] Freeze a new private challenge split for the next release; the v2 challenge was consumed by the initial baseline and must not be reused for tuning.
 
 ### M4 — website
 
 - [x] Build the initial local-only editor, warnings, and per-message copy controls.
-- [x] Add an interactive example and baseline SEO metadata/content.
+- [x] Add focused examples, local draft persistence/reset, actionable warning explanations, sequential-copy status, mobile layout checks, and baseline SEO/FAQ content.
 - [x] Add the first indexed Discord Markdown reference guide with measured corpus evidence.
 - [ ] Add focused table/splitting pages and an accessible Discord-style preview.
 - [x] Deploy static assets to Cloudflare Pages.
@@ -172,6 +172,8 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 - [x] Build and validate a replayable deterministic baseline pack from current fixtures and mutants.
 - [x] Prepare and validate 500 blinded public critic packets with hidden gold/split metadata.
 - [x] Pilot blinded two-critic evaluation and adjudication on 500 public cases.
+- [x] Triage the first semantic validation failures, fix unresolved-reference detection, URL-identity scoring, escape-aware matching, and line-aware fenced-code splitting, and add minimized regressions.
+- [ ] Re-adjudicate or quarantine the six v2 labels that conflict with canonical warning names, safe visible URL policy, or Discord escaping; do not optimize converter behavior against them.
 - [ ] Add failure clustering, minimization, and adversarial neighbor generation.
 - [ ] Gate isolated optimizer patches against validation and frozen challenge sets.
 - [ ] Scale to 25,000-50,000 stratified WildChat cases after privacy and evaluator-calibration gates pass.
