@@ -5,7 +5,7 @@
   "status": "complete",
   "converterIdentity": {
     "repositoryCommit": null,
-    "sourceSha256": "d55e9d422c4f939de597a9381d889254c65f940e4695b976773246baafb0f578",
+    "sourceSha256": "08a04b30c80ba36cde1511d08f7ecc2e729978e02c283f2d3a067d19d92aa7a3",
     "policyFixtureSha256": "13bfff561ace33858e7c31943fb05a107f5f1a46356a34b5dd932f96d6b09526"
   },
   "runtime": {
