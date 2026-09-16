@@ -11,7 +11,13 @@ const schemaPaths = [
   "data/schema/loop-judgment.schema.json",
   "data/schema/loop-adjudication.schema.json",
   "data/schema/loop-attempt.schema.json",
-  "data/schema/loop-report.schema.json"
+  "data/schema/loop-report.schema.json",
+  "data/schema/loop-packet.schema.json",
+  "data/schema/loop-pilot-manifest.schema.json",
+  "data/schema/loop-calibration-key.schema.json",
+  "data/schema/loop-calibration-manifest.schema.json",
+  "data/schema/loop-critic-output.schema.json",
+  "data/schema/loop-calibration-report.schema.json"
 ];
 const manifestPath = "data/loop/baseline-v1/manifest.json";
 const casesPath = "data/loop/baseline-v1/cases.jsonl";
@@ -78,7 +84,16 @@ const report = JSON.parse(await readFile(reportPath, "utf8"));
 validate(validators.get(schemaPaths[5])!, report, reportPath);
 assertEqual(manifest.runId, report.runId, "manifest/report run ID");
 assertEqual(JSON.stringify(report), JSON.stringify(expectedReport(cases)), "recomputed baseline report");
-console.log(`Validated ${schemaPaths.length} loop schemas, bound manifest hashes, recomputed report, and ${records} baseline cases.`);
+const calibrationReportPath = "data/reports/critic-calibration-v1.json";
+const calibrationReport = JSON.parse(await readFile(calibrationReportPath, "utf8"));
+validate(validators.get(schemaPaths[11])!, calibrationReport, calibrationReportPath);
+assertEqual(calibrationReport.controls.positive + calibrationReport.controls.negative, calibrationReport.controls.total, "calibration control total");
+for (const critic of calibrationReport.critics) {
+  assertEqual(critic.correct + critic.incorrect + critic.abstained, calibrationReport.controls.total, `${critic.criticId} decision total`);
+  assertClose(critic.accuracy, critic.correct / calibrationReport.controls.total, `${critic.criticId} accuracy`);
+}
+assertClose(calibrationReport.pairwiseVerdictAgreement.rate, calibrationReport.pairwiseVerdictAgreement.agreements / calibrationReport.pairwiseVerdictAgreement.total, "pairwise agreement rate");
+console.log(`Validated ${schemaPaths.length} loop schemas, bound manifest hashes, recomputed reports, and ${records} baseline cases.`);
 
 function expectedReport(cases: Array<Record<string, any>>): Record<string, unknown> {
   const goldCases = cases.filter((item) => item.gold);
@@ -146,6 +161,7 @@ async function loadJsonl(path: string): Promise<Record<string, unknown>[]> { con
 async function sha256File(path: string): Promise<string> { const hash = createHash("sha256"); for await (const chunk of createReadStream(path)) hash.update(chunk); return hash.digest("hex"); }
 async function countRecords(path: string): Promise<number> { let count = 0; const lines = createInterface({ input: createReadStream(path), crlfDelay: Infinity }); for await (const line of lines) if (line.trim()) count++; return count; }
 function assertEqual(actual: unknown, expected: unknown, identity: string): void { if (actual !== expected) throw new Error(`${identity}: expected ${expected}, received ${actual}`); }
+function assertClose(actual: number, expected: number, identity: string): void { if (Math.abs(actual - expected) > Number.EPSILON * 8) throw new Error(`${identity}: expected ${expected}, received ${actual}`); }
 
 function validate(validator: ValidateFunction, value: unknown, identity: string): void {
   if (!validator(value)) throw new Error(`${identity}: ${ajv.errorsText(validator.errors, { separator: "; " })}`);

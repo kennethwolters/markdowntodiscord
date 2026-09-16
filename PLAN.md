@@ -167,6 +167,7 @@ See [`docs/data-pipeline.md`](./docs/data-pipeline.md) for commands and recovery
 - [x] Specify the data portfolio, agent roles, durable records, metrics, leakage controls, and acceptance gates.
 - [x] Add versioned loop-record schemas and an immutable source-lineage split manifest.
 - [x] Build and validate a replayable deterministic baseline pack from current fixtures and mutants.
+- [x] Prepare and validate 500 blinded public critic packets with hidden gold/split metadata.
 - [ ] Pilot blinded two-critic evaluation and adjudication on 500 public cases.
 - [ ] Add failure clustering, minimization, and adversarial neighbor generation.
 - [ ] Gate isolated optimizer patches against validation and frozen challenge sets.

@@ -25,7 +25,7 @@
     "scores": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["semanticPreservation", "discordCompatibility", "readability", "continuity", "formatBalance", "safety", "omissionOrInvention", "overallAcceptability"],
+      "required": ["semanticPreservation", "discordCompatibility", "readability", "continuity", "formatBalance", "safety", "informationIntegrity", "overallAcceptability"],
       "properties": {
         "semanticPreservation": { "$ref": "#/$defs/score" },
         "discordCompatibility": { "$ref": "#/$defs/score" },
@@ -33,7 +33,7 @@
         "continuity": { "$ref": "#/$defs/score" },
         "formatBalance": { "$ref": "#/$defs/score" },
         "safety": { "$ref": "#/$defs/score" },
-        "omissionOrInvention": { "$ref": "#/$defs/score" },
+        "informationIntegrity": { "$ref": "#/$defs/score" },
         "overallAcceptability": { "$ref": "#/$defs/score" }
       }
     },

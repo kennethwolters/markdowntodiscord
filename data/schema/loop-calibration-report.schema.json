@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/loop-calibration-report-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "calibrationId", "status", "controls", "inputs", "critics", "pairwiseVerdictAgreement", "knownBias", "interpretation"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "calibrationId": { "const": "critic-calibration-v1" },
+    "status": { "const": "complete" },
+    "controls": {
+      "type": "object", "additionalProperties": false, "required": ["total", "positive", "negative", "negativeClasses"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 1 }, "positive": { "type": "integer", "minimum": 1 }, "negative": { "type": "integer", "minimum": 1 },
+        "negativeClasses": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "inputs": {
+      "type": "object", "additionalProperties": false,
+      "required": ["packetsSha256", "answerKeySha256", "promptSha256", "rubricSha256", "policySha256"],
+      "properties": {
+        "packetsSha256": { "$ref": "#/$defs/sha256" }, "answerKeySha256": { "$ref": "#/$defs/sha256" }, "promptSha256": { "$ref": "#/$defs/sha256" },
+        "rubricSha256": { "$ref": "#/$defs/sha256" }, "policySha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "critics": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["criticId", "provider", "model", "outputSha256", "correct", "incorrect", "abstained", "accuracy", "positiveControlRecall", "negativeControlRecall"],
+        "properties": {
+          "criticId": { "type": "string", "minLength": 1 }, "provider": { "type": "string", "minLength": 1 }, "model": { "type": "string", "minLength": 1 },
+          "outputSha256": { "$ref": "#/$defs/sha256" }, "correct": { "type": "integer", "minimum": 0 }, "incorrect": { "type": "integer", "minimum": 0 },
+          "abstained": { "type": "integer", "minimum": 0 }, "accuracy": { "$ref": "#/$defs/rate" }, "positiveControlRecall": { "$ref": "#/$defs/rate" }, "negativeControlRecall": { "$ref": "#/$defs/rate" }
+        }
+      }
+    },
+    "pairwiseVerdictAgreement": {
+      "type": "object", "additionalProperties": false, "required": ["agreements", "total", "rate"],
+      "properties": { "agreements": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 1 }, "rate": { "$ref": "#/$defs/rate" } }
+    },
+    "knownBias": {
+      "type": "object", "additionalProperties": false, "required": ["criticId", "caseId", "finding", "routingPolicy"],
+      "properties": { "criticId": { "type": "string", "minLength": 1 }, "caseId": { "type": "string", "minLength": 1 }, "finding": { "type": "string", "minLength": 1 }, "routingPolicy": { "type": "string", "minLength": 1 } }
+    },
+    "interpretation": { "type": "string", "minLength": 1 }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "rate": { "type": "number", "minimum": 0, "maximum": 1 } }
+}

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "calibrationId": "critic-calibration-v1",
+  "status": "complete",
+  "controls": {
+    "total": 36,
+    "positive": 18,
+    "negative": 18,
+    "negativeClasses": [
+      "append-active-mention",
+      "truncate-output",
+      "drop-output",
+      "unbalanced-fence",
+      "over-capacity"
+    ]
+  },
+  "inputs": {
+    "packetsSha256": "9d8b65329d3f5bd8bcdefb7273b180ce1edb81be83e8e22284d1429cff4a8081",
+    "answerKeySha256": "a0d49f1eeb1852e8954e3919ac9645041738ee08f12a29adda890f1ee0382f4d",
+    "promptSha256": "9e3ba2e40f9e96eade288c25cadaa19e2d91dd569b0c05eaeb06c3db9689a469",
+    "rubricSha256": "5eba6bca858fbf294cf9964177462bdef5409cc8d6a30d2e9b2bb4ace01b4c24",
+    "policySha256": "7d7faaf95f83592b8ed3af2296beaedcd33880cd3be586236b207d27dce0a638"
+  },
+  "critics": [
+    {
+      "criticId": "luna",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-luna",
+      "outputSha256": "105dd8952f0ca9113b9bc08543650c4428d63a0b53219cef63aa17cf36c858de",
+      "correct": 35,
+      "incorrect": 1,
+      "abstained": 0,
+      "accuracy": 0.9722222222222222,
+      "positiveControlRecall": 0.9444444444444444,
+      "negativeControlRecall": 1.0
+    },
+    {
+      "criticId": "sol",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-sol",
+      "outputSha256": "df9044f2c12e2057d347fc4e01c55e0cae195b4b62511e3f25c93f14a240119a",
+      "correct": 36,
+      "incorrect": 0,
+      "abstained": 0,
+      "accuracy": 1.0,
+      "positiveControlRecall": 1.0,
+      "negativeControlRecall": 1.0
+    }
+  ],
+  "pairwiseVerdictAgreement": {
+    "agreements": 35,
+    "total": 36,
+    "rate": 0.9722222222222222
+  },
+  "knownBias": {
+    "criticId": "luna",
+    "caseId": "policy:discord-policy-mentions-preserved-opt-in",
+    "finding": "False failure: treated intentionally active mentions as unsafe despite neutralizeMentions=false.",
+    "routingPolicy": "Do not use Luna alone for mention opt-out judgments; require Sol or adjudication."
+  },
+  "interpretation": "Control accuracy measures critic calibration only. It is not converter quality, and agent judgments are not promoted to gold."
+}
