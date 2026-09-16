@@ -9,49 +9,13 @@ const neutralize = requiredElement<HTMLInputElement>("neutralize");
 const copyNext = requiredElement<HTMLButtonElement>("copy-all");
 const sourceCount = requiredElement<HTMLSpanElement>("source-count");
 const messageCount = requiredElement<HTMLSpanElement>("message-count");
-const examplePicker = requiredElement<HTMLSelectElement>("example-picker");
 const fileInput = requiredElement<HTMLInputElement>("file-input");
+const clearButton = requiredElement<HTMLButtonElement>("clear");
 const inputPanel = source.closest<HTMLElement>(".input-panel")!;
 const undoClear = requiredElement<HTMLDivElement>("undo-clear");
 
 const storage = { source: "markdown-to-discord:tab-draft", neutralize: "markdown-to-discord:neutralize", progress: "markdown-to-discord:copy-progress" };
 const maxFileBytes = 2 * 1024 * 1024;
-const examples: Record<string, string> = {
-  mixed: `# Release notes
-
-Here is what changed in **version 2.0**:
-
-| Feature | Status |
-|---|---:|
-| Import Markdown | Done |
-| Discord output | Ready |
-
-- [x] Preserve code
-- [ ] Share with @everyone
-
-\`\`\`ts
-const message = "Long code blocks split safely";
-\`\`\`
-
-![Architecture](https://example.com/diagram.png)`,
-  table: `## Launch checklist
-
-| Task | Owner | Status |
-|---|---|---:|
-| Review notes | Sam | Done |
-| Post update | Lee | Pending |
-
-- [x] Test formatting
-- [ ] Paste into Discord`,
-  mentions: `Please notify @everyone and <@123456789012345678>.
-
-Read [the safe guide](https://example.com/guide) and ignore [this unsafe link](javascript:alert(1)).`,
-  "long-code": `# Long code example
-
-\`\`\`js
-${Array.from({ length: 90 }, (_, index) => `console.log("Line ${index + 1}: Discord-safe splitting");`).join("\n")}
-\`\`\``
-};
 
 const warningHelp: Record<ConversionWarning["code"], { title: string; action: string; href: string }> = {
   "lossy-table": { title: "Table converted", action: "Check column alignment before posting.", href: "/discord-markdown-guide/#conversion" },
@@ -77,20 +41,12 @@ source.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !copyNext.disabled) { event.preventDefault(); copyNext.click(); }
 });
 neutralize.addEventListener("change", () => { persist(); render(); });
-requiredElement("load-example").addEventListener("click", () => {
-  source.value = examples[examplePicker.value] ?? examples.mixed;
-  clearedDraft = undefined;
-  hideUndo();
-  persist();
-  render();
-  source.focus();
-});
 requiredElement("open-file").addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", async () => { const file = fileInput.files?.[0]; if (file) await loadFile(file); fileInput.value = ""; });
 for (const eventName of ["dragenter", "dragover"]) inputPanel.addEventListener(eventName, (event) => { event.preventDefault(); inputPanel.classList.add("dragging"); });
 for (const eventName of ["dragleave", "drop"]) inputPanel.addEventListener(eventName, (event) => { event.preventDefault(); inputPanel.classList.remove("dragging"); });
 inputPanel.addEventListener("drop", async (event) => { const file = event.dataTransfer?.files[0]; if (file) await loadFile(file); });
-requiredElement("clear").addEventListener("click", () => {
+clearButton.addEventListener("click", () => {
   if (!source.value) return;
   clearedDraft = source.value;
   clearedCopyProgress = [...copiedIndices];
@@ -119,7 +75,7 @@ copyNext.addEventListener("click", async () => {
   markCopied(copiedIndex);
   const announcement = currentMessages.length === 1 ? "Output copied" : `Message ${copiedIndex + 1} of ${currentMessages.length} copied`;
   status.textContent = announcement;
-  copyNext.textContent = announcement;
+  copyNext.textContent = "✓";
   copyNext.classList.add("copied");
   window.setTimeout(() => {
     copyNext.classList.remove("copied");
@@ -137,15 +93,16 @@ function scheduleRender(): void {
 function render(): void {
   const value = source.value;
   copiedIndices.clear();
-  sourceCount.textContent = `${Array.from(value).length.toLocaleString()} characters`;
+  sourceCount.textContent = Array.from(value).length.toLocaleString();
+  clearButton.disabled = value.length === 0;
   outputs.replaceChildren();
   warnings.replaceChildren();
 
   if (!value.trim()) {
     currentMessages = [];
     nextCopyIndex = 0;
-    outputs.append(emptyState("Your converted messages will appear here."));
-    messageCount.textContent = "0 messages";
+    outputs.append(emptyState("↓"));
+    messageCount.textContent = "0";
     status.textContent = "No output";
     copyNext.disabled = true;
     updateCopyButton();
@@ -158,7 +115,7 @@ function render(): void {
   restoreCopyProgress();
   copyNext.disabled = currentMessages.length === 0;
   updateCopyButton();
-  messageCount.textContent = `${currentMessages.length} ${currentMessages.length === 1 ? "message" : "messages"}`;
+  messageCount.textContent = currentMessages.length.toLocaleString();
 
   renderWarnings(result.warnings);
   status.textContent = `${currentMessages.length} ${currentMessages.length === 1 ? "message" : "messages"} ready${result.warnings.length ? ` with ${result.warnings.length} conversion warnings` : ""}.`;
@@ -176,12 +133,13 @@ function renderWarnings(items: ConversionWarning[]): void {
     const copy = document.createElement("div");
     const strong = document.createElement("strong");
     strong.textContent = matches.length > 1 ? `${help.title} (${matches.length})` : help.title;
-    const detail = document.createElement("span");
-    detail.textContent = ` ${matches.length > 1 && code === "unresolved-reference" ? matches.map((match) => match.message).join(" ") : help.action}`;
-    copy.append(strong, detail);
+    copy.append(strong);
+    copy.title = matches.length > 1 && code === "unresolved-reference" ? matches.map((match) => match.message).join(" ") : help.action;
     const link = document.createElement("a");
     link.href = help.href;
-    link.textContent = "Learn more";
+    link.textContent = "?";
+    link.setAttribute("aria-label", `Help: ${help.title}`);
+    link.title = help.action;
     item.append(copy, link);
     warnings.append(item);
   }
@@ -191,11 +149,17 @@ function updateCopyButton(): void {
   const complete = currentMessages.length > 1 && copiedIndices.size === currentMessages.length;
   copyNext.disabled = currentMessages.length === 0 || complete;
   copyNext.textContent = complete
+    ? `✓ ${currentMessages.length} / ${currentMessages.length}`
+    : currentMessages.length <= 1
+      ? "⧉"
+      : `⧉ ${nextCopyIndex + 1} / ${currentMessages.length}`;
+  const label = complete
     ? `All ${currentMessages.length} messages copied`
     : currentMessages.length <= 1
       ? "Copy output"
       : `Copy message ${nextCopyIndex + 1} of ${currentMessages.length}`;
-  copyNext.setAttribute("aria-label", copyNext.textContent);
+  copyNext.setAttribute("aria-label", label);
+  copyNext.title = label;
 }
 
 function outputCard(message: string, index: number, total: number): HTMLElement {
@@ -207,7 +171,7 @@ function outputCard(message: string, index: number, total: number): HTMLElement 
   heading.className = "message-heading";
   const label = document.createElement("span");
   label.id = `message-${index + 1}-label`;
-  label.textContent = total === 1 ? "Ready to paste" : `Message ${index + 1} of ${total}`;
+  label.textContent = total === 1 ? "1" : `${index + 1} / ${total}`;
   const count = document.createElement("span");
   count.className = "message-length";
   count.textContent = `${Array.from(message).length.toLocaleString()} / 2,000`;
@@ -218,10 +182,12 @@ function outputCard(message: string, index: number, total: number): HTMLElement 
   const button = document.createElement("button");
   button.className = "copy-button";
   button.type = "button";
-  button.textContent = `Copy message${total > 1 ? ` ${index + 1}` : ""}`;
+  button.textContent = "⧉";
+  button.setAttribute("aria-label", `Copy message${total > 1 ? ` ${index + 1}` : ""}`);
+  button.title = `Copy message${total > 1 ? ` ${index + 1}` : ""}`;
   button.addEventListener("click", async () => {
     if (await copyText(message)) {
-      showCopied(button, "Copied");
+      showCopied(button, "✓");
       markCopied(index);
       status.textContent = `${total > 1 ? `Message ${index + 1}` : "Output"} copied`;
     }
