@@ -105,6 +105,8 @@ The 500-case pilot packet file is also emitted as two ordered 250-case shards so
 
 Critic calibration uses 18 correct policy outputs and 18 deterministically corrupted negative controls covering omissions, active-mention invention, unbalanced fences, and over-capacity output. Positive and negative identities live only in the ignored answer key. Critics receive explicit conversion options but not the answer. Outputs must satisfy `loop-critic-output.schema.json` before scoring; protocol-invalid outputs are retained as failed calibration attempts rather than repaired into evidence. The first valid two-model calibration scored 35/36 for Luna and 36/36 for Sol, with 35/36 verdict agreement. Luna's sole false failure rejected intentionally active mentions under `neutralizeMentions=false`. Policy v2 made that override explicit; the fresh policy-v2 calibration then scored 36/36 for both critics with 36/36 agreement. Aggregate evidence is committed in `data/reports/critic-calibration-v1.json` and `data/reports/critic-calibration-v2.json`.
 
+The 500-case pilot produced 470 agreements across 499 protocol-valid comparisons (94.2%), 29 disagreements, and one quarantined citation record. Both critics passed all 18 existing policy-gold controls. A fresh blinded adjudicator routed the 30 reviewed cases to 12 passes and 18 triage-only failures. Seven independently supportable specification/policy behaviors were promoted to deterministic fixtures; baseline v2 contains 1,177 cases, passes all 25 gold fixtures, and has zero invariant failures. Aggregate hashes and authority limitations are recorded in `data/reports/critic-pilot-v1.json`.
+
 ## Operational rules
 
 1. Run one acquisition or transformation stage at a time.

@@ -73,6 +73,28 @@ describe("convertMarkdown", () => {
       .toBe("Read [the docs](https://example.com/docs).");
   });
 
+  it("uses the first duplicate reference definition and accepts an empty destination", () => {
+    expect(convertMarkdown("[foo]\n\n[foo]: first\n[foo]: second").messages[0]).toBe("foo (first)");
+    expect(convertMarkdown("[foo]: <>\n\n[foo]").messages[0]).toBe("foo ()");
+  });
+
+  it("preserves multiline heading semantics on every Discord line", () => {
+    expect(convertMarkdown("Foo\nBar\n---").messages[0]).toBe("## Foo\n## Bar");
+  });
+
+  it("escapes the ordered-list delimiter rather than the first digit", () => {
+    expect(convertMarkdown("1\\. not a list").messages[0]).toBe("1\\. not a list");
+  });
+
+  it("encodes Markdown delimiters inside clickable link destinations", () => {
+    expect(convertMarkdown("<https://foo.bar.`baz>").messages[0]).toBe("[https://foo.bar.\\`baz](https://foo.bar.%60baz)");
+  });
+
+  it("retains CDATA character data and removes processing instructions", () => {
+    expect(convertMarkdown("foo <![CDATA[>&<]]>").messages[0]).toBe("foo \\>&<");
+    expect(convertMarkdown("<?php echo '>'; ?>\n\nokay").messages[0]).toBe("okay");
+  });
+
   it("removes unsafe link targets", () => {
     const result = convertMarkdown("[Run this](javascript:alert(1))");
     expect(result.messages[0]).toBe("Run this [unsafe URL removed]");

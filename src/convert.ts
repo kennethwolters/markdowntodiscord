@@ -70,8 +70,9 @@ export function convertMarkdown(source: string, options: ConvertOptions = {}): C
 }
 
 function collectDefinitions(node: Node, definitions: Map<string, Definition>): void {
-  if (node.type === "definition" && node.identifier && node.url) {
-    definitions.set(node.identifier.toLowerCase(), { url: node.url, title: node.title });
+  if (node.type === "definition" && node.identifier && node.url !== undefined) {
+    const identifier = node.identifier.toLowerCase();
+    if (!definitions.has(identifier)) definitions.set(identifier, { url: node.url, title: node.title });
   }
   for (const child of node.children ?? []) collectDefinitions(child, definitions);
 }
@@ -79,7 +80,10 @@ function collectDefinitions(node: Node, definitions: Map<string, Definition>): v
 function renderBlock(node: Node, context: Context, depth = 0): string {
   switch (node.type) {
     case "paragraph": return renderInlineChildren(node, context);
-    case "heading": return `${"#".repeat(Math.min(node.depth ?? 1, 6))} ${renderInlineChildren(node, context)}`;
+    case "heading": {
+      const prefix = `${"#".repeat(Math.min(node.depth ?? 1, 6))} `;
+      return renderInlineChildren(node, context).split("\n").map((line) => `${prefix}${line}`).join("\n");
+    }
     case "thematicBreak": return "──────────";
     case "blockquote": return prefixLines(renderChildren(node, context, depth), "> ");
     case "code": return fencedCode(node.value ?? "", node.lang ?? "");
@@ -179,7 +183,10 @@ function escapeDiscordText(value: string): string {
   return pieces.map((piece, index) => {
     if (index % 2 === 1) return piece;
     const escaped = piece.replaceAll(/([\\*_~`])/g, "\\$1");
-    return escaped.split("\n").map((line) => line.replace(/^( {0,3})(?=(?:#|>|[-+]\s|\d+[.)]\s))/, "$1\\")).join("\n");
+    return escaped.split("\n").map((line) => line
+      .replace(/^( {0,3}\d+)([.)])(\s)/, "$1\\$2$3")
+      .replace(/^( {0,3})(?=(?:#|>|[-+]\s))/, "$1\\"))
+      .join("\n");
   }).join("");
 }
 
@@ -200,17 +207,32 @@ function longestBacktickRun(value: string): number {
 }
 
 function renderLink(label: string, url: string, context: Context): string {
-  if (/^(?:https?:|mailto:)/i.test(url)) return `[${label}](${url.replaceAll(" ", "%20").replaceAll(")", "\\)")})`;
+  if (/^(?:https?:|mailto:)/i.test(url)) return `[${label}](${safeLinkDestination(url)})`;
   context.warnings.push({ code: "unsafe-url", message: "A relative or unsafe link was converted to non-clickable text." });
   if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return `${label} [unsafe URL removed]`;
   return `${label} (${escapeDiscordText(url)})`;
 }
 
+function safeLinkDestination(url: string): string {
+  return url
+    .replaceAll(" ", "%20")
+    .replaceAll("\\", "%5C")
+    .replaceAll("(", "%28")
+    .replaceAll(")", "%29")
+    .replaceAll("[", "%5B")
+    .replaceAll("]", "%5D")
+    .replaceAll("`", "%60");
+}
+
 function flattenHtml(value: string, trim = true): string {
   const flattened = value
+    .replaceAll(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, "$1")
+    .replaceAll(/<!--[\s\S]*?-->/g, "")
+    .replaceAll(/<\?[\s\S]*?\?>/g, "")
     .replaceAll(/<br\s*\/?>/gi, "\n")
     .replaceAll(/<\/?(?:p|div|details|summary|li|ul|ol|h[1-6])(?:\s[^>]*)?>/gi, "\n")
     .replaceAll(/<[^>]+>/g, "")
+    .replaceAll(/^<[^>]*$/g, "")
     .replaceAll(/\n{3,}/g, "\n\n");
   return trim ? flattened.trim() : flattened;
 }

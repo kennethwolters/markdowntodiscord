@@ -18,10 +18,11 @@ const schemaPaths = [
   "data/schema/loop-calibration-manifest.schema.json",
   "data/schema/loop-critic-output.schema.json",
   "data/schema/loop-calibration-report.schema.json",
-  "data/schema/loop-adjudicator-output.schema.json"
+  "data/schema/loop-adjudicator-output.schema.json",
+  "data/schema/loop-pilot-report.schema.json"
 ];
-const manifestPath = "data/loop/baseline-v1/manifest.json";
-const casesPath = "data/loop/baseline-v1/cases.jsonl";
+const manifestPath = "data/loop/baseline-v2/manifest.json";
+const casesPath = "data/loop/baseline-v2/cases.jsonl";
 
 const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true });
 addFormats(ajv);
@@ -39,7 +40,7 @@ const requiredSourcePaths = [
   "data/spec/commonmark-0.31.2.jsonl",
   "data/mutations/commonmark-mutants-v1.jsonl"
 ];
-const requiredArtifactPaths = ["data/loop/baseline-v1/cases.jsonl", "data/loop/baseline-v1/report.json"];
+const requiredArtifactPaths = ["data/loop/baseline-v2/cases.jsonl", "data/loop/baseline-v2/report.json"];
 assertEqual(JSON.stringify(manifest.sources.map((item: { path: string }) => item.path).sort()), JSON.stringify([...requiredSourcePaths].sort()), "manifest source membership");
 assertEqual(JSON.stringify(manifest.artifacts.map((item: { path: string }) => item.path).sort()), JSON.stringify([...requiredArtifactPaths].sort()), "manifest artifact membership");
 for (const source of manifest.sources) {
@@ -80,11 +81,20 @@ for await (const line of lines) {
   lineageSplits.set(record.source.lineageId, record.split);
 }
 if (records === 0) throw new Error(`${casesPath} contains no records`);
-const reportPath = "data/loop/baseline-v1/report.json";
+const reportPath = "data/loop/baseline-v2/report.json";
 const report = JSON.parse(await readFile(reportPath, "utf8"));
 validate(validators.get(schemaPaths[5])!, report, reportPath);
 assertEqual(manifest.runId, report.runId, "manifest/report run ID");
-assertEqual(JSON.stringify(report), JSON.stringify(expectedReport(cases)), "recomputed baseline report");
+assertEqual(JSON.stringify(report), JSON.stringify(expectedReport(cases, manifest.runId)), "recomputed baseline report");
+const pilotReportPath = "data/reports/critic-pilot-v1.json";
+const pilotReport = JSON.parse(await readFile(pilotReportPath, "utf8"));
+validate(validators.get(schemaPaths[13])!, pilotReport, pilotReportPath);
+assertEqual(pilotReport.selection.policyGold + pilotReport.selection.commonmarkTrainInvariant + pilotReport.selection.mutantTrainInvariant, pilotReport.records, "pilot selection total");
+for (const critic of pilotReport.critics) assertEqual(critic.verdicts.pass + critic.verdicts.fail + critic.verdicts.abstain, pilotReport.records, `${critic.criticId} pilot verdict total`);
+assertEqual(pilotReport.agreement.comparable + pilotReport.agreement.excludedProtocolInvalid, pilotReport.records, "pilot comparison total");
+assertClose(pilotReport.agreement.rate, pilotReport.agreement.agreements / pilotReport.agreement.comparable, "pilot agreement rate");
+assertEqual(pilotReport.routing.noReview + pilotReport.routing.disagreement + pilotReport.routing.protocolInvalid, pilotReport.records, "pilot routing total");
+assertEqual(pilotReport.adjudication.pass + pilotReport.adjudication.fail, pilotReport.adjudication.records, "pilot adjudication total");
 for (const calibrationReportPath of ["data/reports/critic-calibration-v1.json", "data/reports/critic-calibration-v2.json"]) {
   const calibrationReport = JSON.parse(await readFile(calibrationReportPath, "utf8"));
   validate(validators.get(schemaPaths[11])!, calibrationReport, calibrationReportPath);
@@ -97,7 +107,7 @@ for (const calibrationReportPath of ["data/reports/critic-calibration-v1.json", 
 }
 console.log(`Validated ${schemaPaths.length} loop schemas, bound manifest hashes, recomputed reports, and ${records} baseline cases.`);
 
-function expectedReport(cases: Array<Record<string, any>>): Record<string, unknown> {
+function expectedReport(cases: Array<Record<string, any>>, runId: string): Record<string, unknown> {
   const goldCases = cases.filter((item) => item.gold);
   const goldPassed = goldCases.filter((item) => item.gold.exactMessagesMatch && item.gold.warningCodesMatch).length;
   const failedCases = cases.filter((item) =>
@@ -117,7 +127,7 @@ function expectedReport(cases: Array<Record<string, any>>): Record<string, unkno
   }
   return {
     schemaVersion: 1,
-    runId: "public-baseline-v1",
+    runId,
     cases: cases.length,
     splitCounts,
     kindCounts: sortedRecord(kindCounts),

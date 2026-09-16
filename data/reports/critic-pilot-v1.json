@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "pilotId": "public-pilot-v1",
+  "status": "adjudicated",
+  "records": 500,
+  "selection": {
+    "policyGold": 18,
+    "commonmarkTrainInvariant": 241,
+    "mutantTrainInvariant": 241
+  },
+  "inputs": {
+    "packetsSha256": "d29c769686cc70a33681fd9387b0def7353712ec8544c3492985c868aaa3c903",
+    "privateIndexSha256": "1f6818afa7d17a5e6d5d96c4e763cda85a2f98d6bf85de1766e4c1a8c478b464",
+    "lunaOutputSha256": "63e0f2db207903a165c84512d1257bc5c0c10f931300737e68038cd58a30d5d8",
+    "solOutputSha256": "9fb611b64eb76029501b8ab06af425c87c25df3f03e1945499d3511922ef827e",
+    "evaluationSummarySha256": "1b05cea582409f6420928a97ff62da9482ace243d8d24f6a3c3f387281b47068",
+    "triageSha256": "6d005a2328f4d1905fe89b2e52bf363d0b11f91b258bb575f7034d3c906fe0fa",
+    "adjudicationPacketsSha256": "a22b0c6119cf92d326209b6edf3759e982fdcc173095d810ca96ed2fb9306a26",
+    "adjudicatorOutputSha256": "8a653c06cf38320025f8e35514b7cda6a5e799b5abaa0e637dd83f12a94a655d",
+    "adjudicationRecordsSha256": "87df2cb4fdb73f31bb8819acd393026fa6b37bd14d642ca51b3a5d80170fc29a",
+    "adjudicationSummarySha256": "b4c40496c0bdd1d4e6d701cfdfd9cedc044b2331285e0a2711779c72ddb4365f"
+  },
+  "critics": [
+    { "criticId": "luna", "verdicts": { "pass": 488, "fail": 12, "abstain": 0 }, "protocolQuarantined": 1, "policyGoldPasses": 18 },
+    { "criticId": "sol", "verdicts": { "pass": 481, "fail": 19, "abstain": 0 }, "protocolQuarantined": 0, "policyGoldPasses": 18 }
+  ],
+  "agreement": {
+    "agreements": 470,
+    "comparable": 499,
+    "excludedProtocolInvalid": 1,
+    "rate": 0.9418837675350701
+  },
+  "routing": {
+    "noReview": 470,
+    "disagreement": 29,
+    "protocolInvalid": 1
+  },
+  "adjudication": {
+    "records": 30,
+    "pass": 12,
+    "fail": 18,
+    "labelAuthority": "triage-only"
+  },
+  "followUp": {
+    "deterministicPolicyFixturesAdded": 7,
+    "baselineV2Cases": 1177,
+    "baselineV2GoldPassed": 25,
+    "baselineV2InvariantFailures": 0
+  },
+  "interpretation": "Critic and adjudicator decisions are triage-only. The pilot found candidate failure clusters; only independently supported specification or explicit policy fixtures became correctness gates."
+}

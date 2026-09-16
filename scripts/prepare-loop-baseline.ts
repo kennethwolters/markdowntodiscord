@@ -40,7 +40,10 @@ const sources = {
   commonmark: "data/spec/commonmark-0.31.2.jsonl",
   mutant: "data/mutations/commonmark-mutants-v1.jsonl"
 } as const;
-const outputDirectory = "data/loop/baseline-v1";
+const baselineVersion = argument("--version") ?? "2";
+if (!/^\d+$/.test(baselineVersion)) throw new Error(`Invalid baseline version: ${baselineVersion}`);
+const runId = `public-baseline-v${baselineVersion}`;
+const outputDirectory = `data/loop/baseline-v${baselineVersion}`;
 const casesPath = `${outputDirectory}/cases.jsonl`;
 const reportPath = `${outputDirectory}/report.json`;
 const manifestPath = `${outputDirectory}/manifest.json`;
@@ -81,7 +84,7 @@ async function main(): Promise<void> {
     .digest("hex");
   const manifest = {
     schemaVersion: 1,
-    runId: "public-baseline-v1",
+    runId,
     runKind: "baseline",
     status: "complete",
     converterIdentity: {
@@ -232,7 +235,7 @@ function createReport(cases: BaselineCase[]) {
   }
   return {
     schemaVersion: 1,
-    runId: "public-baseline-v1",
+    runId,
     cases: cases.length,
     splitCounts,
     kindCounts: sortedRecord(kindCounts),
@@ -286,6 +289,7 @@ function uniqueStrings(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return [...new Set(value.filter((item): item is string => typeof item === "string"))].sort();
 }
+function argument(name: string): string | undefined { const index = process.argv.indexOf(name); return index >= 0 ? process.argv[index + 1] : undefined; }
 function codePointLength(value: string): number { return Array.from(value).length; }
 function digest(value: string | Uint8Array): string { return createHash("sha256").update(value).digest("hex"); }
 async function sha256File(path: string): Promise<string> { const hash = createHash("sha256"); for await (const chunk of createReadStream(path)) hash.update(chunk); return hash.digest("hex"); }

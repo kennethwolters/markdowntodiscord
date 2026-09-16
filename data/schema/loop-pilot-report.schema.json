@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markdowntodiscord.com/schema/loop-pilot-report-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "pilotId", "status", "records", "selection", "inputs", "critics", "agreement", "routing", "adjudication", "followUp", "interpretation"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "pilotId": { "const": "public-pilot-v1" },
+    "status": { "const": "adjudicated" },
+    "records": { "type": "integer", "minimum": 1 },
+    "selection": { "type": "object", "additionalProperties": false, "required": ["policyGold", "commonmarkTrainInvariant", "mutantTrainInvariant"], "properties": { "policyGold": { "type": "integer", "minimum": 0 }, "commonmarkTrainInvariant": { "type": "integer", "minimum": 0 }, "mutantTrainInvariant": { "type": "integer", "minimum": 0 } } },
+    "inputs": { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/sha256" } },
+    "critics": { "type": "array", "minItems": 2, "items": { "type": "object", "additionalProperties": false, "required": ["criticId", "verdicts", "protocolQuarantined", "policyGoldPasses"], "properties": { "criticId": { "type": "string", "minLength": 1 }, "verdicts": { "$ref": "#/$defs/verdicts" }, "protocolQuarantined": { "type": "integer", "minimum": 0 }, "policyGoldPasses": { "type": "integer", "minimum": 0 } } } },
+    "agreement": { "type": "object", "additionalProperties": false, "required": ["agreements", "comparable", "excludedProtocolInvalid", "rate"], "properties": { "agreements": { "type": "integer", "minimum": 0 }, "comparable": { "type": "integer", "minimum": 1 }, "excludedProtocolInvalid": { "type": "integer", "minimum": 0 }, "rate": { "$ref": "#/$defs/rate" } } },
+    "routing": { "type": "object", "additionalProperties": false, "required": ["noReview", "disagreement", "protocolInvalid"], "properties": { "noReview": { "type": "integer", "minimum": 0 }, "disagreement": { "type": "integer", "minimum": 0 }, "protocolInvalid": { "type": "integer", "minimum": 0 } } },
+    "adjudication": { "type": "object", "additionalProperties": false, "required": ["records", "pass", "fail", "labelAuthority"], "properties": { "records": { "type": "integer", "minimum": 0 }, "pass": { "type": "integer", "minimum": 0 }, "fail": { "type": "integer", "minimum": 0 }, "labelAuthority": { "const": "triage-only" } } },
+    "followUp": { "type": "object", "additionalProperties": false, "required": ["deterministicPolicyFixturesAdded", "baselineV2Cases", "baselineV2GoldPassed", "baselineV2InvariantFailures"], "properties": { "deterministicPolicyFixturesAdded": { "type": "integer", "minimum": 0 }, "baselineV2Cases": { "type": "integer", "minimum": 1 }, "baselineV2GoldPassed": { "type": "integer", "minimum": 0 }, "baselineV2InvariantFailures": { "type": "integer", "minimum": 0 } } },
+    "interpretation": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "verdicts": { "type": "object", "additionalProperties": false, "required": ["pass", "fail", "abstain"], "properties": { "pass": { "type": "integer", "minimum": 0 }, "fail": { "type": "integer", "minimum": 0 }, "abstain": { "type": "integer", "minimum": 0 } } }
+  }
+}
