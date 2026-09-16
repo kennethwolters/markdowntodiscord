@@ -17,7 +17,8 @@ const schemaPaths = [
   "data/schema/loop-calibration-key.schema.json",
   "data/schema/loop-calibration-manifest.schema.json",
   "data/schema/loop-critic-output.schema.json",
-  "data/schema/loop-calibration-report.schema.json"
+  "data/schema/loop-calibration-report.schema.json",
+  "data/schema/loop-adjudicator-output.schema.json"
 ];
 const manifestPath = "data/loop/baseline-v1/manifest.json";
 const casesPath = "data/loop/baseline-v1/cases.jsonl";
